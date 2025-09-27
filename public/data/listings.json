@@ -1,0 +1,79 @@
+{
+  "listings": [
+    {
+      "id": "listing-1",
+      "title": "Sunny Studio Apartment",
+      "addr": "123 Main St, Blacksburg, VA",
+      "rent": 1200,
+      "avg_utils": 150,
+      "di_score": 85,
+      "subscores": {
+        "affordability": 80,
+        "accessibility": 90,
+        "safety": 85,
+        "commute": 75,
+        "inclusivity": 95
+      }
+    },
+    {
+      "id": "listing-2", 
+      "title": "Cozy 2BR Townhouse",
+      "addr": "456 Oak Ave, Blacksburg, VA",
+      "rent": 1800,
+      "avg_utils": 200,
+      "di_score": 78,
+      "subscores": {
+        "affordability": 70,
+        "accessibility": 85,
+        "safety": 90,
+        "commute": 80,
+        "inclusivity": 85
+      }
+    },
+    {
+      "id": "listing-3",
+      "title": "Modern 1BR Loft",
+      "addr": "789 Pine St, Blacksburg, VA", 
+      "rent": 1450,
+      "avg_utils": 175,
+      "di_score": 92,
+      "subscores": {
+        "affordability": 85,
+        "accessibility": 95,
+        "safety": 88,
+        "commute": 90,
+        "inclusivity": 100
+      }
+    },
+    {
+      "id": "listing-4",
+      "title": "Spacious 3BR House",
+      "addr": "321 Elm St, Blacksburg, VA",
+      "rent": 2200,
+      "avg_utils": 250,
+      "di_score": 72,
+      "subscores": {
+        "affordability": 60,
+        "accessibility": 75,
+        "safety": 85,
+        "commute": 70,
+        "inclusivity": 80
+      }
+    },
+    {
+      "id": "listing-5",
+      "title": "Accessible Studio",
+      "addr": "654 Maple Dr, Blacksburg, VA",
+      "rent": 1300,
+      "avg_utils": 160,
+      "di_score": 95,
+      "subscores": {
+        "affordability": 75,
+        "accessibility": 100,
+        "safety": 95,
+        "commute": 85,
+        "inclusivity": 100
+      }
+    }
+  ]
+}
