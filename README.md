@@ -2,7 +2,7 @@
 
 > AI-powered housing copilot for international & rural students with D&I scoring
 
-[![VTHacks 2024](https://img.shields.io/badge/VTHacks-2024-blue)](https://vthacks.com)
+[![VTHacks 2025](https://img.shields.io/badge/VTHacks-2024-blue)](https://vthacks.com)
 [![Built for Accessibility](https://img.shields.io/badge/Accessibility-WCAG%202.2%20AA-green)](https://www.w3.org/WAI/WCAG22/quickref/)
 [![Deloitte AI Agent](https://img.shields.io/badge/Deloitte-AI%20Agent-orange)](https://www.deloitte.com)
 [![Databricks ML](https://img.shields.io/badge/Databricks-ML-purple)](https://www.databricks.com)
@@ -170,38 +170,6 @@ The `dbx/notebook.py` implements the complete ETL pipeline:
 - D&I score calculation
 - Export to JSON/Parquet for app consumption
 
-## 🏆 VTHacks Judging Criteria
-
-### Technical Complexity
-- **AI Integration**: Gemini API for lease analysis and translation
-- **Data Pipeline**: Databricks bronze→silver→gold architecture
-- **Scoring Algorithm**: Sophisticated weighted D&I scoring
-- **Accessibility**: WCAG 2.2 AA compliance with custom components
-
-### Originality
-- **D&I Scoring**: Novel approach to housing evaluation
-- **Multi-track Integration**: Combines multiple prize tracks
-- **Accessibility-First**: Built with inclusion as core principle
-- **AI-Powered**: Intelligent lease analysis and visualization
-
-### Ut Prosim (Impact)
-- **Student Focus**: Specifically designed for international and rural students
-- **Accessibility**: Removes barriers for students with disabilities
-- **Financial Planning**: Helps students make informed housing decisions
-- **Compliance**: Ensures fair housing practices
-
-### Accessibility
-- **WCAG 2.2 AA**: Full compliance with accessibility standards
-- **Keyboard Navigation**: Complete keyboard support
-- **Screen Reader**: Full screen reader compatibility
-- **Dyslexia Support**: Specialized font options
-
-### DEI (Diversity, Equity, Inclusion)
-- **D&I Scoring**: Core feature evaluates inclusion metrics
-- **International Students**: Specialized features for international students
-- **Accessibility**: Ensures housing is accessible to all
-- **Fair Housing**: Compliance checking for discrimination prevention
-
 ## 🎯 Prize Track Integration
 
 ### Deloitte AI Agent Track
@@ -273,38 +241,6 @@ npm run a11y:audit
 - [ ] Forms are accessible
 - [ ] Images have alt text
 - [ ] Headings are properly structured
-
-## 📱 Demo Script (5 Minutes)
-
-### 1. Introduction (30 seconds)
-"Welcome to Inclusive Housing Navigator, an AI-powered housing copilot for international and rural students. We're solving the challenge of finding accessible, affordable, and inclusive housing."
-
-### 2. Onboarding (1 minute)
-- Show user preference setup
-- Highlight accessibility options
-- Demonstrate international student features
-
-### 3. D&I Scoring (1.5 minutes)
-- Show scoring algorithm in action
-- Explain weighted scoring system
-- Demonstrate score breakdown
-
-### 4. AI Features (1.5 minutes)
-- Lease QA analysis
-- Auto-visualization
-- Budget planning
-- Compliance checking
-
-### 5. Accessibility Demo (1 minute)
-- Keyboard navigation
-- Screen reader support
-- High contrast mode
-- Dyslexia-friendly fonts
-
-### 6. Impact & Conclusion (30 seconds)
-- Student success stories
-- Accessibility impact
-- Future roadmap
 
 ## 🚀 Deployment
 
