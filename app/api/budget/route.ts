@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BudgetPlanner } from '@/lib/budget/budget-planner';
-import { HousingListing, UserPreferences } from '@/types';
+import { Listing, UserPreferences } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       userPreferences, 
       analysis_type = 'full' 
     }: { 
-      listing: HousingListing; 
+      listing: Listing; 
       userPreferences: UserPreferences;
       analysis_type?: 'full' | 'quick' | 'compare';
     } = body;

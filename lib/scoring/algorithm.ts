@@ -1,4 +1,4 @@
-import { HousingListing, DIScore, UserPreferences } from '@/types';
+import { Listing, DIScore, UserPreferences } from '@/types';
 
 /**
  * D&I Scoring Algorithm
@@ -50,7 +50,7 @@ export class DIScoringAlgorithm {
   /**
    * Calculate accessibility score (0-100)
    */
-  static calculateAccessibilityScore(listing: HousingListing): { score: number; rationale: string } {
+  static calculateAccessibilityScore(listing: Listing): { score: number; rationale: string } {
     let score = 0;
     const features: string[] = [];
 
@@ -92,7 +92,7 @@ export class DIScoringAlgorithm {
   /**
    * Calculate safety score (0-100)
    */
-  static calculateSafetyScore(listing: HousingListing): { score: number; rationale: string } {
+  static calculateSafetyScore(listing: Listing): { score: number; rationale: string } {
     let score = 0;
     const factors: string[] = [];
 
@@ -142,7 +142,7 @@ export class DIScoringAlgorithm {
    * Calculate commute score (0-100)
    */
   static calculateCommuteScore(
-    listing: HousingListing,
+    listing: Listing,
     winterPenalty: boolean = false
   ): { score: number; rationale: string } {
     let score = 0;
@@ -204,7 +204,7 @@ export class DIScoringAlgorithm {
   /**
    * Calculate inclusivity score (0-100)
    */
-  static calculateInclusivityScore(listing: HousingListing): { score: number; rationale: string } {
+  static calculateInclusivityScore(listing: Listing): { score: number; rationale: string } {
     let score = 0;
     const features: string[] = [];
 
@@ -244,7 +244,7 @@ export class DIScoringAlgorithm {
    * Calculate overall D&I score
    */
   static calculateOverallScore(
-    listing: HousingListing,
+    listing: Listing,
     userPreferences: UserPreferences
   ): DIScore {
     const affordability = this.calculateAffordabilityScore(
@@ -299,7 +299,7 @@ export class DIScoringAlgorithm {
    * Score multiple listings
    */
   static scoreListings(
-    listings: HousingListing[],
+    listings: Listing[],
     userPreferences: UserPreferences
   ): ScoredListing[] {
     return listings.map(listing => ({

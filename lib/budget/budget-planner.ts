@@ -1,10 +1,10 @@
-import { HousingListing, BudgetAnalysis, UserPreferences } from '@/types';
+import { Listing, BudgetAnalysis, UserPreferences } from '@/types';
 
 export class BudgetPlanner {
   /**
    * Calculate total monthly cost for a listing
    */
-  static calculateTotalMonthlyCost(listing: HousingListing): number {
+  static calculateTotalMonthlyCost(listing: Listing): number {
     return listing.rent + listing.utilities + (listing.deposits / 12);
   }
 
@@ -18,7 +18,7 @@ export class BudgetPlanner {
   /**
    * Generate deposit schedule
    */
-  static generateDepositSchedule(listing: HousingListing): {
+  static generateDepositSchedule(listing: Listing): {
     first_month: number;
     last_month: number;
     security_deposit: number;
@@ -37,7 +37,7 @@ export class BudgetPlanner {
   /**
    * Generate what-if scenarios
    */
-  static generateWhatIfScenarios(listing: HousingListing, userBudget: number): {
+  static generateWhatIfScenarios(listing: Listing, userBudget: number): {
     scenario: string;
     impact: string;
     new_cost: number;
@@ -92,7 +92,7 @@ export class BudgetPlanner {
    * Generate budget recommendations
    */
   static generateBudgetRecommendations(
-    listing: HousingListing, 
+    listing: Listing, 
     userBudget: number,
     userPreferences: UserPreferences
   ): string[] {
@@ -148,7 +148,7 @@ export class BudgetPlanner {
    * Perform comprehensive budget analysis
    */
   static analyzeBudget(
-    listing: HousingListing,
+    listing: Listing,
     userPreferences: UserPreferences
   ): BudgetAnalysis {
     const totalMonthlyCost = this.calculateTotalMonthlyCost(listing);
@@ -169,7 +169,7 @@ export class BudgetPlanner {
   /**
    * Compare multiple listings financially
    */
-  static compareListings(listings: HousingListing[], userPreferences: UserPreferences): {
+  static compareListings(listings: Listing[], userPreferences: UserPreferences): {
     listing_id: number;
     name: string;
     total_cost: number;
@@ -196,7 +196,7 @@ export class BudgetPlanner {
   /**
    * Generate budget timeline
    */
-  static generateBudgetTimeline(listing: HousingListing, months: number = 12): {
+  static generateBudgetTimeline(listing: Listing, months: number = 12): {
     month: number;
     rent: number;
     utilities: number;
@@ -228,7 +228,7 @@ export class BudgetPlanner {
    * Calculate savings potential
    */
   static calculateSavingsPotential(
-    listing: HousingListing,
+    listing: Listing,
     userBudget: number,
     savingsGoal: number
   ): {

@@ -2,7 +2,7 @@
 
 > AI-powered housing copilot for international & rural students with D&I scoring
 
-[![VTHacks 2024](https://img.shields.io/badge/VTHacks-2024-blue)](https://vthacks.com)
+[![VTHacks 2025](https://img.shields.io/badge/VTHacks-2025-blue)](https://vthacks.com)
 [![Built for Accessibility](https://img.shields.io/badge/Accessibility-WCAG%202.2%20AA-green)](https://www.w3.org/WAI/WCAG22/quickref/)
 [![Deloitte AI Agent](https://img.shields.io/badge/Deloitte-AI%20Agent-orange)](https://www.deloitte.com)
 [![Databricks ML](https://img.shields.io/badge/Databricks-ML-purple)](https://www.databricks.com)
@@ -336,7 +336,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **VTHacks 2024** for the hackathon platform
+- **VTHacks 2025** for the hackathon platform
 - **Deloitte** for AI Agent track sponsorship
 - **Databricks** for ML track sponsorship
 - **Capital One** for Financial Hack track
@@ -347,10 +347,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-- **Team**: VTHacks 2024
+- **Team**: VTHacks 2025
 - **Email**: team@inclusivehousingnavigator.com
 - **GitHub**: [@inclusive-housing-navigator](https://github.com/inclusive-housing-navigator)
-- **Devpost**: [VTHacks 2024 Submission](https://devpost.com/inclusive-housing-navigator)
+- **Devpost**: [VTHacks 2025 Submission](https://devpost.com/inclusive-housing-navigator)
 
 ---
 

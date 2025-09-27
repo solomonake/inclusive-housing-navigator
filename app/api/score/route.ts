@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DIScoringAlgorithm } from '@/lib/scoring/algorithm';
-import { HousingListing, UserPreferences } from '@/types';
+import { Listing, UserPreferences } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { listing, userPreferences }: { listing: HousingListing; userPreferences: UserPreferences } = body;
+    const { listing, userPreferences }: { listing: Listing; userPreferences: UserPreferences } = body;
 
     if (!listing || !userPreferences) {
       return NextResponse.json(

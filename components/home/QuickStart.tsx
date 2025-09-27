@@ -1,241 +1,222 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Search, Loader2 } from 'lucide-react';
+import { Listing } from '@/types';
 import { ListingMiniCard } from '@/components/ui/ListingMiniCard';
-import { Listing, Subscores } from '@/types';
-
-interface QuickStartForm {
-  monthlyBudget: string;
-  maxRent: string;
-  needsAccessibility: boolean;
-  language: string;
-}
-
-interface QuickStartState {
-  isLoading: boolean;
-  results: Listing[];
-  error: string | null;
-  announcement: string;
-}
+import { AriaLive } from '@/components/accessibility/aria-live';
 
 export const QuickStart: React.FC = () => {
-  const [form, setForm] = useState<QuickStartForm>({
-    monthlyBudget: '',
-    maxRent: '',
-    needsAccessibility: false,
-    language: 'en'
-  });
+  const [monthlyBudget, setMonthlyBudget] = useState<number | ''>('');
+  const [maxRent, setMaxRent] = useState<number | ''>('');
+  const [needsAccessibility, setNeedsAccessibility] = useState<boolean>(false);
+  const [language, setLanguage] = useState<string>('en');
+  const [topPicks, setTopPicks] = useState<Listing[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [ariaLiveMessage, setAriaLiveMessage] = useState<string>('');
+  const router = useRouter();
 
-  const [state, setState] = useState<QuickStartState>({
-    isLoading: false,
-    results: [],
-    error: null,
-    announcement: ''
-  });
+  const isFormValid = monthlyBudget !== '' && monthlyBudget > 0 && maxRent !== '' && maxRent > 0;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    setForm(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!form.maxRent || !form.monthlyBudget) {
-      setState(prev => ({ ...prev, error: 'Please fill in budget and max rent' }));
-      return;
-    }
-
-    setState({ isLoading: true, results: [], error: null, announcement: '' });
+  const fetchListings = async () => {
+    setIsLoading(true);
+    setError(null);
+    setTopPicks([]);
+    setAriaLiveMessage('Searching for your top housing picks...');
 
     try {
-      // Try API first
-      const response = await fetch(`/api/listings?limit=3&maxRent=${form.maxRent}`);
-      
-      let listings: Listing[] = [];
-      
-      if (response.ok) {
-        const data = await response.json();
-        listings = data.listings || [];
-      } else {
-        // Fallback to mock data
-        const mockResponse = await fetch('/data/listings.json');
-        if (mockResponse.ok) {
-          const mockData = await mockResponse.json();
-          listings = (mockData.listings || []).slice(0, 3);
-        }
-      }
+      const queryParams = new URLSearchParams();
+      queryParams.append('limit', '3');
+      if (maxRent) queryParams.append('maxRent', maxRent.toString());
+      if (needsAccessibility) queryParams.append('accessibility', 'true');
 
-      // Filter by accessibility needs if requested
-      if (form.needsAccessibility) {
-        listings = listings.filter(listing => 
-          listing.subscores?.accessibility && listing.subscores.accessibility > 60
+      const apiUrl = `/api/listings?${queryParams.toString()}`;
+      const response = await fetch(apiUrl);
+
+      let data: Listing[];
+      if (response.ok) {
+        const apiResponse = await response.json();
+        data = apiResponse.data || [];
+      } else {
+        console.warn('API call failed, falling back to mock data.');
+        const mockResponse = await fetch('/data/listings.json');
+        if (!mockResponse.ok) {
+          throw new Error('Failed to load mock data');
+        }
+        const mockData: Listing[] = await mockResponse.json();
+        data = mockData.filter(listing =>
+          (maxRent === '' || listing.rent <= maxRent) &&
+          (!needsAccessibility || listing.acc_bath || listing.elevator || listing.step_free)
         );
       }
 
-      setState({
-        isLoading: false,
-        results: listings,
-        error: null,
-        announcement: `Top picks ready: ${listings.length} listings.`
-      });
+      // Sort by D&I score (descending) and take top 3
+      const sortedPicks = data
+        .sort((a, b) => (b.di_score || 0) - (a.di_score || 0))
+        .slice(0, 3);
 
+      setTopPicks(sortedPicks);
+      setAriaLiveMessage(`Found ${sortedPicks.length} top picks for your budget and preferences.`);
     } catch (err) {
-      setState({
-        isLoading: false,
-        results: [],
-        error: 'Failed to load listings. Please try again.',
-        announcement: 'Failed to load listings.'
-      });
+      console.error('Failed to fetch listings:', err);
+      setError('Failed to load listings. Please try again.');
+      setAriaLiveMessage('Failed to load listings.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const buildViewAllUrl = () => {
-    const params = new URLSearchParams();
-    params.set('maxRent', form.maxRent);
-    params.set('budget', form.monthlyBudget);
-    if (form.needsAccessibility) params.set('accessibility', 'true');
-    if (form.language !== 'en') params.set('lang', form.language);
-    return `/listings?${params.toString()}`;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isFormValid) {
+      fetchListings();
+    }
+  };
+
+  const handleViewAllResults = () => {
+    const queryParams = new URLSearchParams();
+    if (maxRent) queryParams.append('max_rent', maxRent.toString());
+    if (needsAccessibility) queryParams.append('accessibility', 'true');
+    router.push(`/listings?${queryParams.toString()}`);
   };
 
   return (
-    <section className="bg-white rounded-lg border border-gray-200 p-6">
-      {/* Aria Live Region */}
-      <div 
-        className="sr-only" 
-        aria-live="polite" 
-        aria-atomic="true"
-      >
-        {state.announcement}
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+      <AriaLive message={ariaLiveMessage} />
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="monthlyBudget" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="monthlyBudget" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Monthly Budget ($)
             </label>
             <input
               type="number"
               id="monthlyBudget"
-              name="monthlyBudget"
-              value={form.monthlyBudget}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent"
-              placeholder="2000"
-              required
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={monthlyBudget}
+              onChange={(e) => setMonthlyBudget(Number(e.target.value))}
+              min="0"
+              step="50"
+              aria-describedby="budget-helper"
+              placeholder="1500"
             />
-            <p className="text-xs text-gray-500 mt-1">Your total monthly housing budget</p>
+            <p id="budget-helper" className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Your total budget including rent and utilities
+            </p>
           </div>
 
           <div>
-            <label htmlFor="maxRent" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="maxRent" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Max Rent ($)
             </label>
             <input
               type="number"
               id="maxRent"
-              name="maxRent"
-              value={form.maxRent}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent"
-              placeholder="1500"
-              required
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={maxRent}
+              onChange={(e) => setMaxRent(Number(e.target.value))}
+              min="0"
+              step="50"
+              aria-describedby="maxrent-helper"
+              placeholder="1200"
             />
-            <p className="text-xs text-gray-500 mt-1">Maximum rent you can afford</p>
+            <p id="maxrent-helper" className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Maximum rent you can afford
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="needsAccessibility"
-              name="needsAccessibility"
-              checked={form.needsAccessibility}
-              onChange={handleInputChange}
-              className="h-4 w-4 text-blue-600 focus:ring-[var(--ring)] border-gray-300 rounded"
-            />
-            <label htmlFor="needsAccessibility" className="ml-2 block text-sm text-gray-700">
-              Needs accessibility features
-            </label>
-          </div>
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="needsAccessibility"
+            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            checked={needsAccessibility}
+            onChange={(e) => setNeedsAccessibility(e.target.checked)}
+          />
+          <label htmlFor="needsAccessibility" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+            Needs accessibility features (step-free entry, accessible bathroom, etc.)
+          </label>
+        </div>
 
-          <div>
-            <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
-              Language
-            </label>
-            <select
-              id="language"
-              name="language"
-              value={form.language}
-              onChange={handleInputChange}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent"
-            >
-              <option value="en">English</option>
-              <option value="ne">नेपाली (Nepali)</option>
-              <option value="lg">Luganda</option>
-            </select>
-          </div>
+        <div>
+          <label htmlFor="language" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Preferred Language
+          </label>
+          <select
+            id="language"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+          >
+            <option value="en">English</option>
+            <option value="ne">Nepali</option>
+            <option value="lg">Luganda</option>
+          </select>
         </div>
 
         <button
           type="submit"
-          disabled={state.isLoading}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          disabled={!isFormValid || isLoading}
         >
-          {state.isLoading ? 'Finding your perfect match...' : 'Find My Top Picks'}
+          {isLoading ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Finding...
+            </>
+          ) : (
+            <>
+              <Search className="w-5 h-5 mr-2" />
+              Find My Top Picks
+            </>
+          )}
         </button>
-
-        {state.error && (
-          <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md">
-            {state.error}
-          </div>
-        )}
       </form>
 
-      {/* Results Section */}
-      {state.results.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Top Picks</h3>
-          <div className="space-y-4">
-            {state.results.map((listing) => (
+      {error && (
+        <div role="alert" className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+          <p className="text-red-700 dark:text-red-300 text-sm">{error}</p>
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="mt-8 space-y-4">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Finding your matches...</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg p-4">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+                <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {topPicks.length > 0 && !isLoading && (
+        <div className="mt-8 space-y-4">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Your Top Picks</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {topPicks.map((listing) => (
               <ListingMiniCard key={listing.id} listing={listing} />
             ))}
           </div>
-          
-          <div className="mt-6 text-center">
-            <a
-              href={buildViewAllUrl()}
-              className="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:ring-offset-2 transition-colors"
+          <div className="text-center mt-6">
+            <button
+              onClick={handleViewAllResults}
+              className="inline-flex items-center px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
             >
-              View all results ({state.results.length} found)
-            </a>
+              View all results
+            </button>
           </div>
         </div>
       )}
-
-      {/* Loading Skeletons */}
-      {state.isLoading && (
-        <div className="mt-8 space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="animate-pulse">
-              <div className="bg-gray-200 rounded-lg p-4">
-                <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-300 rounded w-1/2 mb-3"></div>
-                <div className="flex justify-between items-center">
-                  <div className="h-3 bg-gray-300 rounded w-1/4"></div>
-                  <div className="h-6 bg-gray-300 rounded w-16"></div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
+    </div>
   );
 };

@@ -1,8 +1,8 @@
 import { DIScoringAlgorithm } from '@/lib/scoring/algorithm';
-import { HousingListing, UserPreferences } from '@/types';
+import { Listing, UserPreferences } from '@/types';
 
 describe('D&I Scoring Algorithm', () => {
-  const mockListing: HousingListing = {
+  const mockListing: Listing = {
     id: 1,
     name: 'Test Listing',
     address: '123 Test St',

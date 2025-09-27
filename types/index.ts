@@ -88,7 +88,7 @@ export interface DIScore {
   };
 }
 
-export interface ScoredListing extends HousingListing {
+export interface ScoredListing extends Listing {
   di_score: DIScore;
 }
 

@@ -1,10 +1,10 @@
-import { HousingListing, CoStarInsights } from '@/types';
+import { Listing, CoStarInsights } from '@/types';
 
 export class CoStarInsightsService {
   /**
    * Generate market statistics for a listing
    */
-  static generateMarketStats(listing: HousingListing, marketData?: any): {
+  static generateMarketStats(listing: Listing, marketData?: any): {
     avg_rent: number;
     price_trend: 'increasing' | 'decreasing' | 'stable';
     vacancy_rate: number;
@@ -29,7 +29,7 @@ export class CoStarInsightsService {
   /**
    * Analyze neighborhood characteristics
    */
-  static analyzeNeighborhood(listing: HousingListing): {
+  static analyzeNeighborhood(listing: Listing): {
     walkability: number;
     transit_score: number;
     safety_score: number;
@@ -47,7 +47,7 @@ export class CoStarInsightsService {
   /**
    * Calculate investment metrics
    */
-  static calculateInvestmentMetrics(listing: HousingListing, marketStats: any): {
+  static calculateInvestmentMetrics(listing: Listing, marketStats: any): {
     roi_potential: 'High' | 'Medium' | 'Low';
     appreciation_rate: number;
     rental_yield: number;
@@ -76,7 +76,7 @@ export class CoStarInsightsService {
   /**
    * Generate comprehensive CoStar insights
    */
-  static generateInsights(listing: HousingListing): CoStarInsights {
+  static generateInsights(listing: Listing): CoStarInsights {
     const marketStats = this.generateMarketStats(listing);
     const neighborhood = this.analyzeNeighborhood(listing);
     const investment = this.calculateInvestmentMetrics(listing, marketStats);
@@ -91,7 +91,7 @@ export class CoStarInsightsService {
   /**
    * Compare listing to market benchmarks
    */
-  static compareToMarket(listing: HousingListing, marketStats: any): {
+  static compareToMarket(listing: Listing, marketStats: any): {
     rent_vs_market: number; // Percentage above/below market
     value_score: number; // 0-100 score
     market_position: 'Above Market' | 'At Market' | 'Below Market';
@@ -118,7 +118,7 @@ export class CoStarInsightsService {
   /**
    * Generate market trends analysis
    */
-  static generateMarketTrends(listing: HousingListing): {
+  static generateMarketTrends(listing: Listing): {
     rent_growth_forecast: number;
     demand_indicators: string[];
     risk_factors: string[];

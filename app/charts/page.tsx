@@ -102,9 +102,9 @@ export default function ChartsPage() {
                   <CostBreakdownPie 
                     data={{
                       rent: listings[0].rent,
-                      utilities: listings[0].avg_utils,
-                      deposit: listings[0].deposit,
-                      fees: listings[0].fees
+                      utilities: listings[0].avg_utils || 0,
+                      deposit: listings[0].deposit || 0,
+                      fees: listings[0].fees || 0
                     }}
                   />
                   <PriceVsDistanceScatter listings={listings.slice(0, 10)} />

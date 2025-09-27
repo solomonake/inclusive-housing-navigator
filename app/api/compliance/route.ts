@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ComplianceRiskAssessment } from '@/lib/compliance/risk-assessment';
-import { HousingListing } from '@/types';
+import { Listing } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { listing }: { listing: HousingListing } = body;
+    const { listing }: { listing: Listing } = body;
 
     if (!listing) {
       return NextResponse.json(

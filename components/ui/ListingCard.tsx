@@ -1,6 +1,10 @@
 import React from 'react';
 import { Listing } from '@/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ScoreChip } from './ScoreChip';
+import { ScoreDonut } from './ScoreDonut';
+import { Heart, FileText, MapPin, DollarSign, Users, Shield, Bus, Globe } from 'lucide-react';
 
 interface ListingCardProps {
   listing: Listing;
@@ -17,95 +21,117 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   isSaved = false,
   className = ''
 }) => {
-  const totalMonthlyCost = listing.rent + listing.avg_utils + (listing.deposit / 12);
+  const totalMonthlyCost = listing.rent + (listing.avg_utils || 0) + ((listing.deposit || 0) / 12);
 
   return (
-    <div className={`card p-6 hover:shadow-md transition-shadow ${className}`}>
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-[hsl(var(--fg))] mb-1">
-            {listing.title}
-          </h3>
-          <p className="text-sm text-[hsl(var(--fg-muted))] mb-2">
-            {listing.addr}
-          </p>
-        </div>
-        <div className="text-right ml-4">
-          <div className="text-2xl font-bold text-[hsl(var(--positive))]">
-            ${listing.rent.toLocaleString()}
+    <Card className={`group hover:scale-105 motion-safe:transition-all duration-300 ${className}`}>
+      <CardHeader className="pb-4">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <CardTitle className="text-lg mb-2 text-white">
+              {listing.title}
+            </CardTitle>
+            <div className="flex items-center text-white/70 text-sm mb-3">
+              <MapPin className="w-4 h-4 mr-1" />
+              {listing.addr}
+            </div>
           </div>
-          <div className="text-sm text-[hsl(var(--fg-muted))]">/month</div>
+          <div className="text-right ml-4">
+            <div className="text-2xl font-bold text-white flex items-center">
+              <DollarSign className="w-5 h-5 mr-1" />
+              {listing.rent.toLocaleString()}
+            </div>
+            <div className="text-sm text-white/60">/month</div>
+          </div>
         </div>
-      </div>
+      </CardHeader>
 
-      {/* D&I Score */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-[hsl(var(--fg))]">D&I Score:</span>
-          <span className="text-lg font-bold text-[hsl(var(--accent))]">
-            {listing.di_score.toFixed(1)}
-          </span>
+      <CardContent className="space-y-4">
+        {/* D&I Score with Donut */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <ScoreDonut score={listing.di_score} size="sm" />
+            <div>
+              <div className="text-sm font-medium text-white">D&I Score</div>
+              <div className="text-xs text-white/60">Total: ${totalMonthlyCost.toLocaleString()}/mo</div>
+            </div>
+          </div>
         </div>
-        <div className="text-sm text-[hsl(var(--fg-muted))]">
-          Total: ${totalMonthlyCost.toLocaleString()}/mo
+
+        {/* Subscore Chips */}
+        <div className="flex flex-wrap gap-2">
+          <ScoreChip type="affordability" score={listing.subscores?.affordability || 0} size="sm" />
+          <ScoreChip type="accessibility" score={listing.subscores?.accessibility || 0} size="sm" />
+          <ScoreChip type="safety" score={listing.subscores?.safety || 0} size="sm" />
+          <ScoreChip type="commute" score={listing.subscores?.commute || 0} size="sm" />
+          <ScoreChip type="inclusivity" score={listing.subscores?.inclusivity || 0} size="sm" />
         </div>
-      </div>
 
-      {/* Subscore Chips */}
-      <div className="flex flex-wrap gap-1 mb-4">
-        <ScoreChip type="affordability" score={listing.subscores.affordability} />
-        <ScoreChip type="accessibility" score={listing.subscores.accessibility} />
-        <ScoreChip type="safety" score={listing.subscores.safety} />
-        <ScoreChip type="commute" score={listing.subscores.commute} />
-        <ScoreChip type="inclusivity" score={listing.subscores.inclusivity} />
-      </div>
+        {/* Inclusivity Badges */}
+        <div className="flex flex-wrap gap-2">
+          {listing.accepts_international && (
+            <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/10 text-white border border-white/20">
+              <Globe className="w-3 h-3 mr-1" />
+              International
+            </div>
+          )}
+          {listing.no_ssn_ok && (
+            <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/10 text-white border border-white/20">
+              <FileText className="w-3 h-3 mr-1" />
+              No SSN OK
+            </div>
+          )}
+          {listing.cosigner_ok && (
+            <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/10 text-white border border-white/20">
+              <Users className="w-3 h-3 mr-1" />
+              Co-signer OK
+            </div>
+          )}
+        </div>
 
-      {/* Inclusivity Badges */}
-      <div className="flex flex-wrap gap-1 mb-4">
-        {listing.accepts_international && (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-            🌍 International
-          </span>
-        )}
-        {listing.no_ssn_ok && (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-            📄 No SSN OK
-          </span>
-        )}
-        {listing.cosigner_ok && (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
-            👥 Co-signer OK
-          </span>
-        )}
-      </div>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 gap-3 text-xs text-white/70">
+          <div className="flex items-center">
+            <Shield className="w-3 h-3 mr-1" />
+            {listing.well_lit ? 'Well Lit' : 'Poor Lighting'}
+          </div>
+          <div className="flex items-center">
+            <Bus className="w-3 h-3 mr-1" />
+            {listing.bus_headway_min ? `${listing.bus_headway_min}min bus` : 'No bus info'}
+          </div>
+        </div>
 
-      {/* Actions */}
-      <div className="flex space-x-2">
-        <button
-          onClick={() => onViewDetails(listing)}
-          className="btn-primary flex-1"
-          aria-label={`View details for ${listing.title}`}
-        >
-          View Details
-        </button>
-        {onSaveListing && (
-          <button
-            onClick={() => onSaveListing(listing)}
-            className={`btn-secondary px-3 ${
-              isSaved ? 'bg-red-50 text-red-600 border-red-200' : ''
-            }`}
-            aria-label={isSaved ? `Remove ${listing.title} from saved` : `Save ${listing.title}`}
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 pt-2">
+          <Button
+            onClick={() => onViewDetails(listing)}
+            className="flex-1"
+            size="sm"
           >
-            {isSaved ? '❤️' : '🤍'}
-          </button>
-        )}
-        <button
-          className="btn-secondary"
-          aria-label={`Analyze lease for ${listing.title}`}
-        >
-          📄 Lease QA
-        </button>
-      </div>
-    </div>
+            View Details
+          </Button>
+          <div className="flex space-x-2">
+            {onSaveListing && (
+              <Button
+                onClick={() => onSaveListing(listing)}
+                variant={isSaved ? "destructive" : "glass"}
+                size="sm"
+                className="px-3"
+              >
+                <Heart className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+              </Button>
+            )}
+            <Button
+              variant="glass"
+              size="sm"
+              className="flex-1 sm:flex-none"
+            >
+              <FileText className="w-4 h-4 mr-1" />
+              Lease QA
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

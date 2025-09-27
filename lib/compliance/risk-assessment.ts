@@ -1,10 +1,10 @@
-import { HousingListing, ComplianceCheck } from '@/types';
+import { Listing, ComplianceCheck } from '@/types';
 
 export class ComplianceRiskAssessment {
   /**
    * Perform FHA/ADA compliance check
    */
-  static assessCompliance(listing: HousingListing): ComplianceCheck {
+  static assessCompliance(listing: Listing): ComplianceCheck {
     const flaggedFields: string[] = [];
     const recommendations: string[] = [];
     let fhaCompliant = true;
@@ -95,7 +95,7 @@ export class ComplianceRiskAssessment {
   /**
    * Generate compliance report
    */
-  static generateComplianceReport(listing: HousingListing): string {
+  static generateComplianceReport(listing: Listing): string {
     const assessment = this.assessCompliance(listing);
     
     let report = `# Compliance Assessment Report\n\n`;
@@ -138,7 +138,7 @@ export class ComplianceRiskAssessment {
   /**
    * Check for specific accessibility violations
    */
-  static checkAccessibilityViolations(listing: HousingListing): string[] {
+  static checkAccessibilityViolations(listing: Listing): string[] {
     const violations: string[] = [];
 
     // Entry accessibility
@@ -167,7 +167,7 @@ export class ComplianceRiskAssessment {
   /**
    * Check for discrimination risks
    */
-  static checkDiscriminationRisks(listing: HousingListing): string[] {
+  static checkDiscriminationRisks(listing: Listing): string[] {
     const risks: string[] = [];
 
     // International student acceptance

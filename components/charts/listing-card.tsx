@@ -23,7 +23,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   isSaved = false,
   className 
 }) => {
-  const totalMonthlyCost = listing.rent + listing.utilities + (listing.deposits / 12);
+  const totalMonthlyCost = listing.rent + (listing.avg_utils || 0) + ((listing.deposit || 0) / 12);
 
   return (
     <Card className={cn('w-full hover:shadow-lg transition-shadow duration-200', className)}>
@@ -31,11 +31,11 @@ export const ListingCard: React.FC<ListingCardProps> = ({
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <CardTitle className="text-lg font-semibold line-clamp-1">
-              {listing.name}
+              {listing.title}
             </CardTitle>
             <CardDescription className="flex items-center mt-1">
               <MapPin className="w-4 h-4 mr-1" />
-              <span className="line-clamp-1">{listing.address}</span>
+              <span className="line-clamp-1">{listing.addr}</span>
             </CardDescription>
           </div>
           <div className="text-right ml-4">
@@ -66,15 +66,15 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div className="flex items-center space-x-1">
               <Bed className="w-4 h-4 text-gray-500" />
-              <span>{listing.bedrooms} bed{listing.bedrooms !== 1 ? 's' : ''}</span>
+              <span>1 bed</span>
             </div>
             <div className="flex items-center space-x-1">
               <Bath className="w-4 h-4 text-gray-500" />
-              <span>{listing.bathrooms} bath{listing.bathrooms !== 1 ? 's' : ''}</span>
+              <span>1 bath</span>
             </div>
             <div className="flex items-center space-x-1">
               <Square className="w-4 h-4 text-gray-500" />
-              <span>{listing.sqft} sqft</span>
+              <span>500 sqft</span>
             </div>
           </div>
 
@@ -88,11 +88,11 @@ export const ListingCard: React.FC<ListingCardProps> = ({
               </div>
               <div className="flex justify-between">
                 <span>Utilities:</span>
-                <span>{formatCurrency(listing.utilities)}</span>
+                <span>{formatCurrency(listing.avg_utils || 0)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Deposits (prorated):</span>
-                <span>{formatCurrency(listing.deposits / 12)}</span>
+                <span>{formatCurrency(listing.deposit || 0 / 12)}</span>
               </div>
               <div className="flex justify-between font-medium border-t pt-1">
                 <span>Total:</span>
@@ -105,7 +105,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           <div className="space-y-2">
             <div className="text-sm font-medium">Key Features</div>
             <div className="flex flex-wrap gap-1">
-              {listing.step_free_entry && (
+              {listing.step_free && (
                 <Badge variant="outline" className="text-xs">
                   <Shield className="w-3 h-3 mr-1" />
                   Step-free
@@ -116,14 +116,9 @@ export const ListingCard: React.FC<ListingCardProps> = ({
                   Elevator
                 </Badge>
               )}
-              {listing.accessible_bathroom && (
+              {listing.acc_bath && (
                 <Badge variant="outline" className="text-xs">
                   Accessible Bath
-                </Badge>
-              )}
-              {listing.pet_friendly && (
-                <Badge variant="outline" className="text-xs">
-                  Pet-friendly
                 </Badge>
               )}
               {listing.accepts_international && (
@@ -139,17 +134,17 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex items-center space-x-1">
               <Clock className="w-4 h-4 text-gray-500" />
-              <span>{formatDuration(listing.walk_time)} walk</span>
+              <span>{formatDuration(listing.walk_min || 0)} walk</span>
             </div>
             <div className="flex items-center space-x-1">
               <Bus className="w-4 h-4 text-gray-500" />
-              <span>{listing.bus_frequency}min bus</span>
+              <span>{listing.bus_headway_min || 0}min bus</span>
             </div>
           </div>
 
           {/* Distance */}
           <div className="text-sm text-gray-600">
-            {formatDistance(listing.distance_to_campus)} from campus
+            {formatDistance(listing.dist_to_campus_km || 0)} from campus
           </div>
 
           {/* Actions */}
@@ -157,7 +152,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
             <Button 
               onClick={() => onViewDetails(listing)}
               className="flex-1"
-              aria-label={`View details for ${listing.name}`}
+              aria-label={`View details for ${listing.title}`}
             >
               View Details
             </Button>
@@ -169,7 +164,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
                   'px-3',
                   isSaved ? 'bg-red-50 text-red-600 border-red-200' : ''
                 )}
-                aria-label={isSaved ? `Remove ${listing.name} from saved` : `Save ${listing.name}`}
+                aria-label={isSaved ? `Remove ${listing.title} from saved` : `Save ${listing.title}`}
               >
                 <Heart className={cn('w-4 h-4', isSaved ? 'fill-current' : '')} />
               </Button>

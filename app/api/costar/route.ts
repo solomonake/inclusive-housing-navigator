@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CoStarInsightsService } from '@/lib/costar/insights';
-import { HousingListing } from '@/types';
+import { Listing } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       listing, 
       analysis_type = 'full' 
     }: { 
-      listing: HousingListing; 
+      listing: Listing; 
       analysis_type?: 'full' | 'market' | 'neighborhood' | 'investment';
     } = body;
 

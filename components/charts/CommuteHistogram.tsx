@@ -23,7 +23,7 @@ export const CommuteHistogram: React.FC<CommuteHistogramProps> = ({
   ];
 
   listings.forEach(listing => {
-    const walkTime = listing.walk_min;
+    const walkTime = listing.walk_min || 0;
     const range = walkTimeRanges.find(r => walkTime >= r.min && walkTime <= r.max);
     if (range) {
       range.count++;

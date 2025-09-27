@@ -46,6 +46,18 @@ export const NavBar: React.FC = () => {
               Charts
             </Link>
             <Link 
+              href="/international" 
+              className="text-sm font-medium text-[hsl(var(--fg))] hover:text-[hsl(var(--accent))] transition-colors focus-ring rounded-md px-2 py-1"
+            >
+              🌍 International
+            </Link>
+            <Link 
+              href="/rural" 
+              className="text-sm font-medium text-[hsl(var(--fg))] hover:text-[hsl(var(--accent))] transition-colors focus-ring rounded-md px-2 py-1"
+            >
+              🌾 Rural
+            </Link>
+            <Link 
               href="/about" 
               className="text-sm font-medium text-[hsl(var(--fg))] hover:text-[hsl(var(--accent))] transition-colors focus-ring rounded-md px-2 py-1"
             >
@@ -101,6 +113,20 @@ export const NavBar: React.FC = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Charts
+              </Link>
+              <Link 
+                href="/international" 
+                className="text-sm font-medium text-[hsl(var(--fg))] hover:text-[hsl(var(--accent))] transition-colors focus-ring rounded-md px-2 py-1"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                🌍 International
+              </Link>
+              <Link 
+                href="/rural" 
+                className="text-sm font-medium text-[hsl(var(--fg))] hover:text-[hsl(var(--accent))] transition-colors focus-ring rounded-md px-2 py-1"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                🌾 Rural
               </Link>
               <Link 
                 href="/about" 

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Heart } from 'lucide-react';
 
 interface HeartButtonProps {
   listingId: string;
@@ -10,46 +11,39 @@ export const HeartButton: React.FC<HeartButtonProps> = ({ listingId }) => {
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const saved = localStorage.getItem('ih-favorites');
-    const favorites = saved ? JSON.parse(saved) : [];
-    setIsSaved(favorites.includes(listingId));
+    // Load saved state from localStorage
+    const savedItems = JSON.parse(localStorage.getItem('ih-favorites') || '[]');
+    setIsSaved(savedItems.includes(listingId));
   }, [listingId]);
 
-  const handleToggle = () => {
-    if (typeof window === 'undefined') return;
-
-    const saved = localStorage.getItem('ih-favorites');
-    const favorites = saved ? JSON.parse(saved) : [];
+  const toggleSaved = () => {
+    let savedItems = JSON.parse(localStorage.getItem('ih-favorites') || '[]');
     
-    let newFavorites;
-    if (favorites.includes(listingId)) {
-      newFavorites = favorites.filter((id: string) => id !== listingId);
-      setIsSaved(false);
+    if (isSaved) {
+      savedItems = savedItems.filter((id: string) => id !== listingId);
     } else {
-      newFavorites = [...favorites, listingId];
-      setIsSaved(true);
+      savedItems.push(listingId);
     }
     
-    localStorage.setItem('ih-favorites', JSON.stringify(newFavorites));
+    localStorage.setItem('ih-favorites', JSON.stringify(savedItems));
+    setIsSaved(!isSaved);
   };
 
   return (
     <button
-      onClick={handleToggle}
-      aria-pressed={isSaved}
+      onClick={toggleSaved}
+      className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
       aria-label={isSaved ? 'Remove from favorites' : 'Add to favorites'}
-      className="p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:ring-offset-2 transition-colors"
-      title={isSaved ? 'Saved' : 'Save'}
+      aria-pressed={isSaved}
+      title={isSaved ? 'Saved' : 'Unsaved'}
     >
-      <span 
-        className={`text-lg ${isSaved ? 'text-red-500' : 'text-gray-400'} transition-colors`}
-        role="img"
-        aria-hidden="true"
-      >
-        {isSaved ? '❤️' : '🤍'}
-      </span>
+      <Heart
+        className={`w-5 h-5 transition-colors ${
+          isSaved 
+            ? 'fill-red-500 text-red-500' 
+            : 'fill-none text-gray-400 hover:text-red-500'
+        }`}
+      />
     </button>
   );
 };
