@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Listing } from '@/types';
+import { ensureArray } from '@/lib/utils/safe';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -80,15 +81,18 @@ export async function GET(request: NextRequest) {
     listings.sort((a, b) => b.di_score - a.di_score);
 
     return NextResponse.json({ 
-      success: true, 
-      data: listings,
-      total: listings.length
+      listings: ensureArray(listings),
+      meta: {
+        total: listings.length,
+        filters: { maxRent, minScore, accessibility },
+        relaxed: listings.length === 0 && (maxRent !== undefined || minScore !== undefined)
+      }
     });
   } catch (error) {
     console.error('Error fetching listings:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch listings' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      listings: [],
+      meta: { error: 'Failed to fetch listings', relaxed: false }
+    });
   }
 }

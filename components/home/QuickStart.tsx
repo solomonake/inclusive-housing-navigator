@@ -39,7 +39,7 @@ export const QuickStart: React.FC = () => {
       let data: Listing[];
       if (response.ok) {
         const apiResponse = await response.json();
-        data = apiResponse.data || [];
+        data = apiResponse.listings || [];
       } else {
         console.warn('API call failed, falling back to mock data.');
         const mockResponse = await fetch('/data/listings.json');

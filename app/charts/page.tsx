@@ -1,29 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { CostBreakdownPie } from '@/components/charts/CostBreakdownPie';
-import { PriceVsDistanceScatter } from '@/components/charts/PriceVsDistanceScatter';
-import { CommuteHistogram } from '@/components/charts/CommuteHistogram';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ScatterChart, Scatter, LineChart, Line, Legend } from 'recharts';
 import { Listing } from '@/types';
-
-interface ChartConfig {
-  type: string;
-  data: any[];
-  options: {
-    title: string;
-    xAxis?: string;
-    yAxis?: string;
-    colors?: string[];
-    legend?: boolean;
-    responsive?: boolean;
-  };
-  justification: string;
-}
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { TrendingUp, DollarSign, MapPin, Accessibility, BarChart3, PieChart as PieChartIcon, Target as ScatterChartIcon } from 'lucide-react';
+import { ensureArray, nonEmpty } from '@/lib/utils/safe';
 
 export default function ChartsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
-  const [charts, setCharts] = useState<ChartConfig[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     loadListings();
@@ -31,188 +19,423 @@ export default function ChartsPage() {
 
   const loadListings = async () => {
     setLoading(true);
+    setError('');
     try {
       const response = await fetch('/api/listings');
-      const data = await response.json();
-      if (data.success) {
-        setListings(data.data.data);
-        generateCharts(data.data.data);
+      const payload = await response.json().catch(() => ({}));
+      const listings: Listing[] = ensureArray(payload?.listings);
+      
+      if (nonEmpty(listings)) {
+        setListings(listings);
+      } else {
+        setError('No listings data available');
       }
     } catch (error) {
       console.error('Error loading listings:', error);
+      setError('Failed to load listings data');
     } finally {
       setLoading(false);
     }
   };
 
-  const generateCharts = async (listingsData: Listing[]) => {
-    try {
-      const response = await fetch('/api/autoviz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dataset: JSON.stringify(listingsData),
-          analysis_type: 'distribution',
-          focus_metrics: ['rent', 'di_score'],
-          user_context: 'housing analysis'
-        })
-      });
+  // Chart 1: Price Distribution Bar Chart
+  const getPriceDistributionData = () => {
+    if (!nonEmpty(listings)) return [];
+    
+    const priceRanges = [
+      { range: '$0-500', min: 0, max: 500, count: 0, color: '#3B82F6' },
+      { range: '$501-750', min: 501, max: 750, count: 0, color: '#10B981' },
+      { range: '$751-1000', min: 751, max: 1000, count: 0, color: '#F59E0B' },
+      { range: '$1001-1250', min: 1001, max: 1250, count: 0, color: '#EF4444' },
+      { range: '$1251+', min: 1251, max: Infinity, count: 0, color: '#8B5CF6' }
+    ];
 
-      const data = await response.json();
-      if (data.success) {
-        setCharts(data.data.recommendations || []);
+    listings.forEach(listing => {
+      const range = priceRanges.find(r => listing.rent >= r.min && listing.rent <= r.max);
+      if (range) {
+        range.count++;
       }
-    } catch (error) {
-      console.error('Error generating charts:', error);
+    });
+
+    return priceRanges.map(({ range, count, color }) => ({ name: range, value: count, color }));
+  };
+
+  // Chart 2: D&I Score Pie Chart
+  const getDiversityScoreData = () => {
+    if (!nonEmpty(listings)) return [];
+    
+    const scoreRanges = [
+      { range: 'Excellent (80-100)', min: 80, max: 100, count: 0, color: '#10B981' },
+      { range: 'Good (60-79)', min: 60, max: 79, count: 0, color: '#84CC16' },
+      { range: 'Fair (40-59)', min: 40, max: 59, count: 0, color: '#F59E0B' },
+      { range: 'Poor (0-39)', min: 0, max: 39, count: 0, color: '#EF4444' }
+    ];
+
+    listings.forEach(listing => {
+      const range = scoreRanges.find(r => listing.di_score >= r.min && listing.di_score <= r.max);
+      if (range) {
+        range.count++;
+      }
+    });
+
+    return scoreRanges.map(({ range, count, color }) => ({ name: range, value: count, color }));
+  };
+
+  // Chart 3: Price vs Distance Scatter Plot
+  const getPriceDistanceData = () => {
+    if (!nonEmpty(listings)) return [];
+    
+    return listings.slice(0, 20).map(listing => ({
+      x: listing.dist_to_campus_km || 0,
+      y: listing.rent || 0,
+      di_score: listing.di_score || 0,
+      name: (listing.title || 'Unknown').substring(0, 20) + '...'
+    }));
+  };
+
+  // Chart 4: Accessibility Features Analysis
+  const getAccessibilityData = () => {
+    if (!nonEmpty(listings)) return [];
+    
+    const features = ['step_free', 'elevator', 'acc_bath', 'acc_parking'];
+    const featureNames = ['Step Free Access', 'Elevator', 'Accessible Bathroom', 'Accessible Parking'];
+    
+    return features.map((feature, index) => ({
+      name: featureNames[index],
+      count: listings.filter(listing => listing[feature as keyof Listing]).length,
+      color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'][index]
+    }));
+  };
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+          <p className="font-medium text-gray-900 dark:text-white">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} className="text-sm" style={{ color: entry.color }}>
+              {entry.name}: {entry.value}
+            </p>
+          ))}
+        </div>
+      );
     }
+    return null;
+  };
+
+  const ScatterTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+          <p className="font-medium text-gray-900 dark:text-white">{data.name}</p>
+          <p className="text-sm text-blue-600">Distance: {data.x} km</p>
+          <p className="text-sm text-green-600">Rent: ${data.y}</p>
+          <p className="text-sm text-purple-600">D&I Score: {data.di_score}</p>
+        </div>
+      );
+    }
+    return null;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[hsl(var(--bg))]">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[hsl(var(--accent))] mx-auto"></div>
-            <p className="mt-4 text-[hsl(var(--fg-muted))]">Generating visualizations...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-400 mx-auto"></div>
+            <p className="mt-4 text-white/70">Loading housing data...</p>
           </div>
         </div>
       </div>
     );
   }
 
+  if (error || !nonEmpty(listings)) {
+    return (
+      <div className="min-h-screen py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Card className="p-8 text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <BarChart3 className="w-10 h-10 text-white" />
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-3">No Data Available</h3>
+            <p className="text-white/70 mb-6">
+              {error || 'No housing data available for visualization.'}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button onClick={loadListings} variant="gradient">
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Retry Loading Data
+              </Button>
+              <Button onClick={() => window.location.href = '/listings'} variant="glass">
+                <MapPin className="w-4 h-4 mr-2" />
+                Go to Listings
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[hsl(var(--bg))]">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[hsl(var(--fg))] mb-2">
-            Auto Visualization
-          </h1>
-          <p className="text-[hsl(var(--fg-muted))]">
-            AI-powered charts and insights from your housing data
-          </p>
-        </div>
-
-        <div className="space-y-8">
-          {/* Sample Charts */}
-          <div>
-            <h2 className="text-2xl font-semibold mb-6">Sample Visualizations</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {listings.length > 0 && (
-                <>
-                  <CostBreakdownPie 
-                    data={{
-                      rent: listings[0].rent,
-                      utilities: listings[0].avg_utils || 0,
-                      deposit: listings[0].deposit || 0,
-                      fees: listings[0].fees || 0
-                    }}
-                  />
-                  <PriceVsDistanceScatter listings={listings.slice(0, 10)} />
-                </>
-              )}
+    <div className="min-h-screen py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-12">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-14 h-14 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center">
+              <BarChart3 className="w-7 h-7 text-white" />
             </div>
-            <div className="mt-6">
-              <CommuteHistogram listings={listings} />
-            </div>
-          </div>
-
-          {/* AI-Generated Charts */}
-          {charts.length > 0 && (
             <div>
-              <h2 className="text-2xl font-semibold mb-6">AI-Generated Insights</h2>
-              <div className="space-y-6">
-                {charts.map((chart, index) => (
-                  <div key={index} className="card p-6">
-                    <h3 className="text-lg font-semibold mb-4">{chart.options.title}</h3>
-                    <div className="h-64 bg-[hsl(var(--muted))] rounded-lg flex items-center justify-center">
-                      <p className="text-[hsl(var(--fg-muted))]">
-                        {chart.type} chart would be rendered here
-                      </p>
-                    </div>
-                    <p className="text-sm text-[hsl(var(--fg-muted))] mt-4">
-                      <strong>Why this chart:</strong> {chart.justification}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Chart Recommendations */}
-          <div className="card p-6">
-            <h3 className="text-lg font-semibold mb-4">Recommended Chart Types</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="p-4 border border-[hsl(var(--border))] rounded-lg">
-                <h4 className="font-semibold mb-2">📊 Distribution Analysis</h4>
-                <p className="text-sm text-[hsl(var(--fg-muted))]">
-                  Bar charts and histograms to show how properties are distributed across price ranges, distances, and D&I scores.
-                </p>
-              </div>
-              
-              <div className="p-4 border border-[hsl(var(--border))] rounded-lg">
-                <h4 className="font-semibold mb-2">🔗 Correlation Analysis</h4>
-                <p className="text-sm text-[hsl(var(--fg-muted))]">
-                  Scatter plots to reveal relationships between rent, distance, and accessibility features.
-                </p>
-              </div>
-              
-              <div className="p-4 border border-[hsl(var(--border))] rounded-lg">
-                <h4 className="font-semibold mb-2">📈 Trend Analysis</h4>
-                <p className="text-sm text-[hsl(var(--fg-muted))]">
-                  Line charts to track how housing costs and availability change over time.
-                </p>
-              </div>
-              
-              <div className="p-4 border border-[hsl(var(--border))] rounded-lg">
-                <h4 className="font-semibold mb-2">🥧 Cost Breakdown</h4>
-                <p className="text-sm text-[hsl(var(--fg-muted))]">
-                  Pie charts to visualize how monthly costs are distributed between rent, utilities, and fees.
-                </p>
-              </div>
-              
-              <div className="p-4 border border-[hsl(var(--border))] rounded-lg">
-                <h4 className="font-semibold mb-2">🗺️ Geographic Analysis</h4>
-                <p className="text-sm text-[hsl(var(--fg-muted))]">
-                  Maps and heat maps to show property locations and neighborhood characteristics.
-                </p>
-              </div>
-              
-              <div className="p-4 border border-[hsl(var(--border))] rounded-lg">
-                <h4 className="font-semibold mb-2">⚖️ Comparison Analysis</h4>
-                <p className="text-sm text-[hsl(var(--fg-muted))]">
-                  Radar charts and comparison tables to evaluate multiple properties side by side.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Data Insights */}
-          <div className="card p-6">
-            <h3 className="text-lg font-semibold mb-4">Data Insights</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[hsl(var(--accent))] mb-2">
-                  {listings.length}
-                </div>
-                <div className="text-sm text-[hsl(var(--fg-muted))]">Total Properties</div>
-              </div>
-              
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[hsl(var(--positive))] mb-2">
-                  {listings.length > 0 ? Math.round(listings.reduce((sum, l) => sum + l.di_score, 0) / listings.length) : 0}
-                </div>
-                <div className="text-sm text-[hsl(var(--fg-muted))]">Average D&I Score</div>
-              </div>
-              
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[hsl(var(--warning))] mb-2">
-                  ${listings.length > 0 ? Math.round(listings.reduce((sum, l) => sum + l.rent, 0) / listings.length) : 0}
-                </div>
-                <div className="text-sm text-[hsl(var(--fg-muted))]">Average Rent</div>
-              </div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white text-shadow mb-2">
+                Housing Analytics Dashboard
+              </h1>
+              <p className="text-white/70 text-base sm:text-lg leading-relaxed">
+                AI-powered insights and visualizations from your housing data
+              </p>
             </div>
           </div>
         </div>
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card className="p-6">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center">
+                  <MapPin className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white">{listings?.length || 0}</p>
+                  <p className="text-white/70 text-sm">Total Properties</p>
+                </div>
+              </div>
+            </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white">
+                  ${nonEmpty(listings) ? Math.round(listings.reduce((sum, l) => sum + (l.rent || 0), 0) / listings.length) : 0}
+                </p>
+                <p className="text-white/70 text-sm">Avg Rent</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center">
+                <Accessibility className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white">
+                  {nonEmpty(listings) ? Math.round(listings.reduce((sum, l) => sum + (l.di_score || 0), 0) / listings.length) : 0}
+                </p>
+                <p className="text-white/70 text-sm">Avg D&I Score</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white">
+                  {nonEmpty(listings) ? Math.round(listings.reduce((sum, l) => sum + (l.dist_to_campus_km || 0), 0) / listings.length * 10) / 10 : 0}
+                </p>
+                <p className="text-white/70 text-sm">Avg Distance (km)</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Charts Grid */}
+        <div className="space-y-8">
+          {/* Row 1: Price Distribution & D&I Scores */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Price Distribution */}
+            <Card className="p-6">
+              <CardHeader>
+                <CardTitle className="text-xl text-white flex items-center">
+                  <BarChart3 className="w-5 h-5 mr-2 text-blue-400" />
+                  Rent Price Distribution
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={getPriceDistributionData()}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                      <XAxis 
+                        dataKey="name" 
+                        stroke="#9CA3AF"
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        stroke="#9CA3AF"
+                        fontSize={12}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                        {getPriceDistributionData().map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* D&I Score Distribution */}
+            <Card className="p-6">
+              <CardHeader>
+                <CardTitle className="text-xl text-white flex items-center">
+                  <PieChartIcon className="w-5 h-5 mr-2 text-green-400" />
+                  Diversity & Inclusion Scores
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={getDiversityScoreData()}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                      >
+                        {getDiversityScoreData().map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Row 2: Price vs Distance Scatter */}
+          <Card className="p-6">
+            <CardHeader>
+              <CardTitle className="text-xl text-white flex items-center">
+                <ScatterChartIcon className="w-5 h-5 mr-2 text-purple-400" />
+                Price vs Distance Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-96">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ScatterChart>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis 
+                      type="number" 
+                      dataKey="x" 
+                      name="Distance (km)"
+                      stroke="#9CA3AF"
+                      fontSize={12}
+                    />
+                    <YAxis 
+                      type="number" 
+                      dataKey="y" 
+                      name="Rent ($)"
+                      stroke="#9CA3AF"
+                      fontSize={12}
+                    />
+                    <Tooltip content={<ScatterTooltip />} />
+                    <Scatter dataKey="y" fill="#8B5CF6" />
+                  </ScatterChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Row 3: Accessibility Features */}
+          <Card className="p-6">
+            <CardHeader>
+              <CardTitle className="text-xl text-white flex items-center">
+                <Accessibility className="w-5 h-5 mr-2 text-yellow-400" />
+                Accessibility Features Availability
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={getAccessibilityData()}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis 
+                      dataKey="name" 
+                      stroke="#9CA3AF"
+                      fontSize={12}
+                    />
+                    <YAxis 
+                      stroke="#9CA3AF"
+                      fontSize={12}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                      {getAccessibilityData().map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Insights Section */}
+        <Card className="mt-8 p-6">
+          <CardHeader>
+            <CardTitle className="text-xl text-white flex items-center">
+              <TrendingUp className="w-5 h-5 mr-2 text-emerald-400" />
+              Key Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                <h4 className="font-semibold text-blue-300 mb-2">💰 Price Insights</h4>
+                <ul className="text-sm text-blue-200 space-y-1">
+                  <li>• Average rent: ${Math.round(listings.reduce((sum, l) => sum + l.rent, 0) / listings.length)}</li>
+                  <li>• Price range: ${Math.min(...listings.map(l => l.rent))} - ${Math.max(...listings.map(l => l.rent))}</li>
+                  <li>• Most common price range: ${getPriceDistributionData().reduce((max, item) => item.value > max.value ? item : max).name}</li>
+                </ul>
+              </div>
+
+              <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+                <h4 className="font-semibold text-green-300 mb-2">♿ Accessibility</h4>
+                <ul className="text-sm text-green-200 space-y-1">
+                  <li>• Properties with wheelchair access: {listings.filter(l => l.wheelchair_access).length}</li>
+                  <li>• Properties with elevators: {listings.filter(l => l.elevator).length}</li>
+                  <li>• Ground floor options: {listings.filter(l => l.ground_floor).length}</li>
+                </ul>
+              </div>
+
+              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                <h4 className="font-semibold text-purple-300 mb-2">📍 Location</h4>
+                <ul className="text-sm text-purple-200 space-y-1">
+                  <li>• Average distance to campus: {Math.round(listings.reduce((sum, l) => sum + l.dist_to_campus_km, 0) / listings.length * 10) / 10} km</li>
+                  <li>• Walkable properties (≤15 min): {listings.filter(l => (l.walk_min || 0) <= 15).length}</li>
+                  <li>• Transit accessible: {listings.filter(l => l.transit_min && l.transit_min <= 30).length}</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

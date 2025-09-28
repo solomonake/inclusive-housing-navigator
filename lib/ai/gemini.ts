@@ -1,260 +1,152 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { LeaseQA } from '@/types';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+export type LeaseQA = {
+  keyTerms: string[];
+  requiredPayments: { oneTime: string[]; recurring: string[] };
+  junkFees: string[];
+  riskNotes: string[];
+  tenantQuestions: string[];
+  plainSummary: string;
+  translation?: string;
+  model: string;
+};
 
-export class GeminiService {
-  private model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+// Initialize Gemini AI with fallback for missing API key
+const getGeminiClient = () => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.warn('GEMINI_API_KEY not found, using mock responses');
+    return null;
+  }
+  return new GoogleGenerativeAI(apiKey);
+};
 
-  /**
-   * Analyze lease document for key information and red flags
-   */
-  async analyzeLease(leaseText: string, language: string = 'en'): Promise<LeaseQA> {
-    const prompt = `
-Analyze this lease document and provide a comprehensive summary. Focus on:
+export async function summarizeLeaseText(text: string, lang: string = 'en'): Promise<LeaseQA> {
+  const genAI = getGeminiClient();
+  
+  if (!genAI) {
+    return getMockLeaseQA(text, lang);
+  }
 
-1. Key terms and conditions
-2. Red flags or concerning clauses
-3. Hidden fees or unexpected costs
-4. Accessibility and discrimination policies
-5. International student accommodations
-6. Compliance with fair housing laws
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
+    const systemPrompt = `
+You are an expert housing lawyer and accessibility consultant. Analyze this lease document and extract the following information in EXACT JSON format:
+
+{
+  "keyTerms": ["List of important lease terms and conditions"],
+  "requiredPayments": {
+    "oneTime": ["Security deposit", "Application fees", "Other one-time payments"],
+    "recurring": ["Monthly rent", "Utilities", "Other recurring charges"]
+  },
+  "junkFees": ["Hidden or questionable fees", "Unnecessary charges"],
+  "riskNotes": ["Potential red flags", "Concerning clauses", "Risks to tenant"],
+  "tenantQuestions": ["Questions tenant should ask landlord", "Clarifications needed"],
+  "plainSummary": "Brief, clear summary of the lease terms"
+}
+
+Focus on:
+- Fair housing compliance
+- Accessibility accommodations
+- International student considerations
+- Hidden costs and fees
+- Tenant rights and protections
 
 Lease Document:
-${leaseText}
+${text.substring(0, 8000)} // Limit text length
 
-Please provide:
-- A clear summary of the lease terms
-- List of red flags or concerning clauses
-- Key terms that tenants should understand
-- Recommendations for the tenant
-- Compliance notes regarding fair housing laws
-
-Format your response as JSON with the following structure:
-{
-  "summary": "Brief summary of the lease",
-  "red_flags": ["List of concerning clauses"],
-  "key_terms": ["Important terms to understand"],
-  "recommendations": ["Recommendations for the tenant"],
-  "compliance_notes": ["Fair housing compliance notes"]
-}
+Return ONLY valid JSON. Be thorough but concise.
 `;
 
+    const result = await model.generateContent(systemPrompt);
+    const response = await result.response;
+    const responseText = response.text();
+    
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      // Try to parse JSON response
-      try {
-        const parsed = JSON.parse(text);
-        return {
-          summary: parsed.summary || 'Unable to analyze lease',
-          red_flags: parsed.red_flags || [],
-          translation: await this.translateText(parsed.summary, language),
-          key_terms: parsed.key_terms || [],
-          recommendations: parsed.recommendations || [],
-          compliance_notes: parsed.compliance_notes || []
-        };
-      } catch (parseError) {
-        // Fallback if JSON parsing fails
-        return {
-          summary: text,
-          red_flags: ['Unable to parse lease analysis'],
-          translation: await this.translateText(text, language),
-          key_terms: [],
-          recommendations: ['Please review the lease carefully'],
-          compliance_notes: []
-        };
-      }
-    } catch (error) {
-      console.error('Error analyzing lease:', error);
-      return {
-        summary: 'Error analyzing lease document',
-        red_flags: ['Analysis failed'],
-        translation: 'Error analyzing lease document',
-        key_terms: [],
-        recommendations: ['Please try again or contact support'],
-        compliance_notes: []
+      const parsed = JSON.parse(responseText);
+      const leaseQA: LeaseQA = {
+        keyTerms: Array.isArray(parsed.keyTerms) ? parsed.keyTerms : [],
+        requiredPayments: {
+          oneTime: Array.isArray(parsed.requiredPayments?.oneTime) ? parsed.requiredPayments.oneTime : [],
+          recurring: Array.isArray(parsed.requiredPayments?.recurring) ? parsed.requiredPayments.recurring : []
+        },
+        junkFees: Array.isArray(parsed.junkFees) ? parsed.junkFees : [],
+        riskNotes: Array.isArray(parsed.riskNotes) ? parsed.riskNotes : [],
+        tenantQuestions: Array.isArray(parsed.tenantQuestions) ? parsed.tenantQuestions : [],
+        plainSummary: parsed.plainSummary || 'Unable to analyze lease document',
+        translation: lang !== 'en' ? await translateText(parsed.plainSummary || text, lang, genAI) : undefined,
+        model: 'gemini-1.5-flash'
       };
+      
+      return leaseQA;
+    } catch (parseError) {
+      console.error('Error parsing Gemini response:', parseError);
+      return getMockLeaseQA(text, lang);
     }
+  } catch (error) {
+    console.error('Error calling Gemini API:', error);
+    return getMockLeaseQA(text, lang);
   }
-
-  /**
-   * Translate text to target language
-   */
-  async translateText(text: string, targetLanguage: string): Promise<string> {
-    if (targetLanguage === 'en') {
-      return text;
-    }
-
-    const prompt = `
-Translate the following text to ${targetLanguage}. Maintain the original meaning and tone:
-
-${text}
-`;
-
-    try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
-    } catch (error) {
-      console.error('Error translating text:', error);
-      return text; // Return original text if translation fails
-    }
-  }
-
-  /**
-   * Extract key information from housing listing
-   */
-  async extractListingInfo(listingText: string): Promise<any> {
-    const prompt = `
-Extract key information from this housing listing:
-
-${listingText}
-
-Please extract and return as JSON:
-{
-  "rent": number,
-  "utilities": number,
-  "deposits": number,
-  "bedrooms": number,
-  "bathrooms": number,
-  "sqft": number,
-  "amenities": ["list of amenities"],
-  "accessibility_features": ["list of accessibility features"],
-  "pet_policy": "pet policy description",
-  "smoking_policy": "smoking policy description",
-  "lease_terms": "lease terms description",
-  "contact_info": "contact information"
 }
-`;
 
-    try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      try {
-        return JSON.parse(text);
-      } catch (parseError) {
-        return {
-          rent: 0,
-          utilities: 0,
-          deposits: 0,
-          bedrooms: 1,
-          bathrooms: 1,
-          sqft: 500,
-          amenities: [],
-          accessibility_features: [],
-          pet_policy: 'Not specified',
-          smoking_policy: 'Not specified',
-          lease_terms: 'Not specified',
-          contact_info: 'Not specified'
-        };
-      }
-    } catch (error) {
-      console.error('Error extracting listing info:', error);
-      return null;
-    }
+async function translateText(text: string, targetLang: string, genAI: GoogleGenerativeAI): Promise<string> {
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const prompt = `Translate the following text to ${targetLang}: ${text}`;
+    
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error('Translation error:', error);
+    return text; // Return original text if translation fails
   }
+}
 
-  /**
-   * Generate accessibility recommendations
-   */
-  async generateAccessibilityRecommendations(listing: any, userNeeds: string[]): Promise<string[]> {
-    const prompt = `
-Based on this housing listing and user accessibility needs, provide specific recommendations:
+function getMockLeaseQA(text: string, lang: string): LeaseQA {
+  const mockSummary = lang === 'en' 
+    ? "This is a sample lease analysis. Please configure your GEMINI_API_KEY to get real AI-powered analysis."
+    : "Esta es un análisis de arrendamiento de muestra. Configure su GEMINI_API_KEY para obtener un análisis real impulsado por IA.";
 
-Listing: ${JSON.stringify(listing, null, 2)}
-User Needs: ${userNeeds.join(', ')}
-
-Provide 3-5 specific, actionable recommendations for improving accessibility or finding suitable housing.
-`;
-
-    try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      // Split by lines and clean up
-      return text.split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0 && !line.match(/^\d+\.$/))
-        .slice(0, 5);
-    } catch (error) {
-      console.error('Error generating accessibility recommendations:', error);
-      return ['Please consult with accessibility experts for personalized recommendations'];
-    }
-  }
-
-  /**
-   * Generate budget analysis and recommendations
-   */
-  async generateBudgetAnalysis(rent: number, utilities: number, deposits: number, userBudget: number): Promise<any> {
-    const prompt = `
-Analyze this housing budget situation:
-
-Monthly Rent: $${rent}
-Monthly Utilities: $${utilities}
-Total Deposits: $${deposits}
-User Budget: $${userBudget}
-
-Provide analysis including:
-1. Total monthly cost
-2. Affordability ratio
-3. Budget recommendations
-4. Cost-saving tips
-5. What-if scenarios
-
-Format as JSON with keys: total_cost, affordability_ratio, recommendations, cost_saving_tips, what_if_scenarios
-`;
-
-    try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      try {
-        return JSON.parse(text);
-      } catch (parseError) {
-        const totalCost = rent + utilities + (deposits / 12);
-        const ratio = totalCost / userBudget;
-        
-        return {
-          total_cost: totalCost,
-          affordability_ratio: ratio,
-          recommendations: [
-            ratio > 0.3 ? 'Consider finding more affordable housing' : 'This housing fits your budget well',
-            'Set aside 3-6 months of rent as emergency fund',
-            'Factor in additional costs like internet, groceries, and transportation'
-          ],
-          cost_saving_tips: [
-            'Look for utilities-included options',
-            'Consider roommates to split costs',
-            'Negotiate deposit amounts if possible'
-          ],
-          what_if_scenarios: [
-            {
-              scenario: 'Utilities increase by 20%',
-              impact: 'Monthly cost would increase by $' + (utilities * 0.2).toFixed(2)
-            },
-            {
-              scenario: 'Rent increases by 5% next year',
-              impact: 'Monthly cost would increase by $' + (rent * 0.05).toFixed(2)
-            }
-          ]
-        };
-      }
-    } catch (error) {
-      console.error('Error generating budget analysis:', error);
-      return {
-        total_cost: rent + utilities + (deposits / 12),
-        affordability_ratio: (rent + utilities + (deposits / 12)) / userBudget,
-        recommendations: ['Please review your budget carefully'],
-        cost_saving_tips: ['Consider all housing costs'],
-        what_if_scenarios: []
-      };
-    }
-  }
+  return {
+    keyTerms: [
+      'Monthly rent amount and due date',
+      'Security deposit requirements',
+      'Lease term and renewal options',
+      'Pet policies and restrictions',
+      'Maintenance and repair responsibilities'
+    ],
+    requiredPayments: {
+      oneTime: [
+        'Security deposit (typically 1-2 months rent)',
+        'Application fee',
+        'First and last month rent'
+      ],
+      recurring: [
+        'Monthly rent payment',
+        'Utilities (if not included)',
+        'Internet and cable (if applicable)'
+      ]
+    },
+    junkFees: [
+      'Administrative fees',
+      'Processing fees',
+      'Move-in/move-out fees'
+    ],
+    riskNotes: [
+      'Review all terms carefully before signing',
+      'Check for automatic rent increase clauses',
+      'Verify maintenance responsibility details'
+    ],
+    tenantQuestions: [
+      'What is included in the rent?',
+      'How are maintenance requests handled?',
+      'What are the penalties for breaking the lease?',
+      'Is renter\'s insurance required?'
+    ],
+    plainSummary: mockSummary,
+    translation: lang !== 'en' ? mockSummary : undefined,
+    model: 'mock'
+  };
 }
