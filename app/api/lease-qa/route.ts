@@ -90,40 +90,70 @@ export async function POST(request: NextRequest) {
     }
 
     if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json(
-        { 
-          error: 'Gemini API key not configured',
-          fallback: {
-            keyTerms: [
-              "Please review lease document for rent terms",
-              "Please review lease document for deposit requirements",
-              "Please review lease document for lease length",
-              "Please review lease document for utility inclusions",
-              "Please review lease document for parking policy",
-              "Please review lease document for pet policy",
-              "Please review lease document for maintenance terms"
-            ],
-            requiredPayments: {
-              oneTime: ["Security deposit", "Application fees", "First and last month rent"],
-              recurring: ["Monthly rent", "Utilities", "Other recurring charges"]
-            },
-            junkFees: ["API not configured - manual review recommended"],
-            riskNotes: ["Please review for accessibility features", "Please review for international student requirements"],
-            tenantQuestions: ["Configure Gemini API for automated analysis", "Review lease manually for key terms"],
-            plainSummary: "Lease analysis unavailable - API not configured. Please review the document manually.",
-            model: "fallback"
-          }
+      // Return fallback analysis instead of error
+      const fallbackAnalysis: LeaseQAResponse = {
+        keyTerms: [
+          "Please review lease document for rent terms",
+          "Please review lease document for deposit requirements", 
+          "Please review lease document for lease length",
+          "Please review lease document for utility inclusions",
+          "Please review lease document for parking policy",
+          "Please review lease document for pet policy",
+          "Please review lease document for maintenance terms"
+        ],
+        requiredPayments: {
+          oneTime: ["Security deposit", "Application fees", "First and last month rent"],
+          recurring: ["Monthly rent", "Utilities", "Other recurring charges"]
         },
-        { status: 503 }
-      );
+        junkFees: ["API not configured - manual review recommended"],
+        riskNotes: ["Please review for accessibility features", "Please review for international student requirements"],
+        tenantQuestions: ["Configure Gemini API for automated analysis", "Review lease manually for key terms"],
+        plainSummary: "Lease analysis unavailable - API not configured. Please review the document manually.",
+        model: "fallback"
+      };
+      
+      return NextResponse.json(fallbackAnalysis);
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     // Generate lease analysis
     const analysisPrompt = LEASE_QA_PROMPT.replace('{lease_text}', lease_text);
-    const analysisResult = await model.generateContent(analysisPrompt);
-    const analysisText = analysisResult.response.text();
+    
+    let analysisText: string;
+    try {
+      const analysisResult = await model.generateContent(analysisPrompt);
+      analysisText = analysisResult.response.text();
+    } catch (geminiError) {
+      console.error('Gemini API error:', geminiError);
+      // Return fallback analysis if Gemini fails
+      const fallbackAnalysis: LeaseQAResponse = {
+        keyTerms: [
+          "Rent amount and payment terms",
+          "Security deposit requirements",
+          "Lease duration and renewal options",
+          "Utility inclusions and exclusions",
+          "Pet policies and restrictions",
+          "Maintenance responsibilities"
+        ],
+        requiredPayments: {
+          oneTime: ["Security deposit", "Application fees", "First month rent"],
+          recurring: ["Monthly rent", "Utilities", "Other recurring charges"]
+        },
+        junkFees: ["Review for hidden fees", "Check for unnecessary charges"],
+        riskNotes: ["Review all terms carefully", "Check for automatic rent increases", "Verify maintenance responsibilities"],
+        tenantQuestions: [
+          "What is included in the rent?",
+          "How are maintenance requests handled?",
+          "What are the penalties for breaking the lease?",
+          "Is renter's insurance required?"
+        ],
+        plainSummary: "AI analysis temporarily unavailable. Please review the lease document manually for key terms and conditions.",
+        model: "fallback"
+      };
+      
+      return NextResponse.json(fallbackAnalysis);
+    }
 
     let analysis: LeaseQAResponse;
     try {
@@ -141,20 +171,40 @@ export async function POST(request: NextRequest) {
           riskNotes: Array.isArray(parsed.riskNotes) ? parsed.riskNotes : [],
           tenantQuestions: Array.isArray(parsed.tenantQuestions) ? parsed.tenantQuestions : [],
           plainSummary: parsed.plainSummary || 'Unable to analyze lease document',
-          model: 'gemini-pro'
+          model: 'gemini-1.5-flash'
         };
       } else {
         throw new Error('No JSON found in response');
       }
     } catch (parseError) {
       console.error('Failed to parse Gemini response:', parseError);
-      return NextResponse.json(
-        { 
-          error: 'Failed to parse analysis response',
-          raw_response: analysisText
+      // Return fallback analysis if JSON parsing fails
+      const fallbackAnalysis: LeaseQAResponse = {
+        keyTerms: [
+          "Rent amount and payment terms",
+          "Security deposit requirements", 
+          "Lease duration and renewal options",
+          "Utility inclusions and exclusions",
+          "Pet policies and restrictions",
+          "Maintenance responsibilities"
+        ],
+        requiredPayments: {
+          oneTime: ["Security deposit", "Application fees", "First month rent"],
+          recurring: ["Monthly rent", "Utilities", "Other recurring charges"]
         },
-        { status: 500 }
-      );
+        junkFees: ["Review for hidden fees", "Check for unnecessary charges"],
+        riskNotes: ["Review all terms carefully", "Check for automatic rent increases", "Verify maintenance responsibilities"],
+        tenantQuestions: [
+          "What is included in the rent?",
+          "How are maintenance requests handled?",
+          "What are the penalties for breaking the lease?",
+          "Is renter's insurance required?"
+        ],
+        plainSummary: "AI analysis response parsing failed. Please review the lease document manually for key terms and conditions.",
+        model: "fallback"
+      };
+      
+      return NextResponse.json(fallbackAnalysis);
     }
 
     // Add translation if requested
