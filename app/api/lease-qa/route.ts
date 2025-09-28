@@ -4,89 +4,42 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 interface LeaseQAResponse {
-  summary: string;
-  key_terms: {
-    rent: string;
-    deposit: string;
-    lease_duration: string;
-    utilities: string;
-    parking: string;
-    pets: string;
-    maintenance: string;
-  };
-  red_flags: string[];
-  translation?: {
-    language: string;
-    summary: string;
-    key_terms: Record<string, string>;
-  };
-  accessibility_notes: string[];
-  international_student_notes: string[];
-  cost_breakdown: {
-    monthly_rent: number;
-    utilities: number;
-    deposit: number;
-    fees: number;
-    total_first_month: number;
-  };
-  recommendations: string[];
+  keyTerms: string[];
+  requiredPayments: { oneTime: string[]; recurring: string[] };
+  junkFees: string[];
+  riskNotes: string[];
+  tenantQuestions: string[];
+  plainSummary: string;
+  translation?: string;
+  model: string;
 }
 
 const LEASE_QA_PROMPT = `
-You are an expert housing advisor specializing in lease analysis for international and rural students. Analyze the following lease document and provide a comprehensive assessment.
-
-Lease Document Text:
-{lease_text}
-
-Please provide a detailed analysis in the following JSON format:
+You are an expert housing lawyer and accessibility consultant. Analyze this lease document and extract the following information in EXACT JSON format:
 
 {
-  "summary": "Brief 2-3 sentence summary of the lease",
-  "key_terms": {
-    "rent": "Monthly rent amount and payment terms",
-    "deposit": "Security deposit amount and refund conditions",
-    "lease_duration": "Lease length and renewal terms",
-    "utilities": "What utilities are included/excluded",
-    "parking": "Parking availability and costs",
-    "pets": "Pet policy and fees",
-    "maintenance": "Maintenance responsibilities and procedures"
+  "keyTerms": ["List of important lease terms and conditions"],
+  "requiredPayments": {
+    "oneTime": ["Security deposit", "Application fees", "Other one-time payments"],
+    "recurring": ["Monthly rent", "Utilities", "Other recurring charges"]
   },
-  "red_flags": [
-    "List of concerning clauses or potential issues",
-    "Unusual fees or penalties",
-    "Restrictive terms"
-  ],
-  "accessibility_notes": [
-    "Notes about accessibility features mentioned",
-    "Potential accessibility concerns"
-  ],
-  "international_student_notes": [
-    "Specific considerations for international students",
-    "Documentation requirements",
-    "Co-signer policies"
-  ],
-  "cost_breakdown": {
-    "monthly_rent": 0,
-    "utilities": 0,
-    "deposit": 0,
-    "fees": 0,
-    "total_first_month": 0
-  },
-  "recommendations": [
-    "Actionable advice for the student",
-    "Questions to ask the landlord",
-    "Negotiation points"
-  ]
+  "junkFees": ["Hidden or questionable fees", "Unnecessary charges"],
+  "riskNotes": ["Potential red flags", "Concerning clauses", "Risks to tenant"],
+  "tenantQuestions": ["Questions tenant should ask landlord", "Clarifications needed"],
+  "plainSummary": "Brief, clear summary of the lease terms"
 }
 
 Focus on:
-1. Identifying hidden fees or unusual terms
-2. Accessibility considerations
-3. International student-specific concerns
-4. Clear cost breakdown
-5. Practical recommendations
+- Fair housing compliance
+- Accessibility accommodations
+- International student considerations
+- Hidden costs and fees
+- Tenant rights and protections
 
-Be thorough but concise. Prioritize student safety and financial protection.
+Lease Document:
+{lease_text}
+
+Return ONLY valid JSON. Be thorough but concise.
 `;
 
 const TRANSLATION_PROMPT = `
@@ -102,7 +55,32 @@ Provide the complete translated analysis in the same JSON format.
 
 export async function POST(request: NextRequest) {
   try {
-    const { lease_text, target_language } = await request.json();
+    let lease_text: string;
+    let target_language: string;
+
+    // Check if it's a file upload (FormData) or JSON
+    const contentType = request.headers.get('content-type');
+    if (contentType?.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      const file = formData.get('file') as File;
+      const language = formData.get('language') as string;
+      
+      if (!file) {
+        return NextResponse.json(
+          { error: 'File is required' },
+          { status: 400 }
+        );
+      }
+
+      // For now, we'll just use the file name as text
+      // In a real implementation, you'd extract text from the file
+      lease_text = `Lease document: ${file.name} (${file.size} bytes)`;
+      target_language = language || 'en';
+    } else {
+      const { lease_text: text, target_language: lang } = await request.json();
+      lease_text = text;
+      target_language = lang || 'en';
+    }
 
     if (!lease_text) {
       return NextResponse.json(
@@ -116,27 +94,24 @@ export async function POST(request: NextRequest) {
         { 
           error: 'Gemini API key not configured',
           fallback: {
-            summary: "Lease analysis unavailable - API not configured",
-            key_terms: {
-              rent: "Please review lease document for rent terms",
-              deposit: "Please review lease document for deposit requirements",
-              lease_duration: "Please review lease document for lease length",
-              utilities: "Please review lease document for utility inclusions",
-              parking: "Please review lease document for parking policy",
-              pets: "Please review lease document for pet policy",
-              maintenance: "Please review lease document for maintenance terms"
+            keyTerms: [
+              "Please review lease document for rent terms",
+              "Please review lease document for deposit requirements",
+              "Please review lease document for lease length",
+              "Please review lease document for utility inclusions",
+              "Please review lease document for parking policy",
+              "Please review lease document for pet policy",
+              "Please review lease document for maintenance terms"
+            ],
+            requiredPayments: {
+              oneTime: ["Security deposit", "Application fees", "First and last month rent"],
+              recurring: ["Monthly rent", "Utilities", "Other recurring charges"]
             },
-            red_flags: ["API not configured - manual review recommended"],
-            accessibility_notes: ["Please review for accessibility features"],
-            international_student_notes: ["Please review for international student requirements"],
-            cost_breakdown: {
-              monthly_rent: 0,
-              utilities: 0,
-              deposit: 0,
-              fees: 0,
-              total_first_month: 0
-            },
-            recommendations: ["Configure Gemini API for automated analysis", "Review lease manually for key terms"]
+            junkFees: ["API not configured - manual review recommended"],
+            riskNotes: ["Please review for accessibility features", "Please review for international student requirements"],
+            tenantQuestions: ["Configure Gemini API for automated analysis", "Review lease manually for key terms"],
+            plainSummary: "Lease analysis unavailable - API not configured. Please review the document manually.",
+            model: "fallback"
           }
         },
         { status: 503 }
@@ -155,7 +130,19 @@ export async function POST(request: NextRequest) {
       // Extract JSON from the response
       const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        analysis = JSON.parse(jsonMatch[0]);
+        const parsed = JSON.parse(jsonMatch[0]);
+        analysis = {
+          keyTerms: Array.isArray(parsed.keyTerms) ? parsed.keyTerms : [],
+          requiredPayments: {
+            oneTime: Array.isArray(parsed.requiredPayments?.oneTime) ? parsed.requiredPayments.oneTime : [],
+            recurring: Array.isArray(parsed.requiredPayments?.recurring) ? parsed.requiredPayments.recurring : []
+          },
+          junkFees: Array.isArray(parsed.junkFees) ? parsed.junkFees : [],
+          riskNotes: Array.isArray(parsed.riskNotes) ? parsed.riskNotes : [],
+          tenantQuestions: Array.isArray(parsed.tenantQuestions) ? parsed.tenantQuestions : [],
+          plainSummary: parsed.plainSummary || 'Unable to analyze lease document',
+          model: 'gemini-pro'
+        };
       } else {
         throw new Error('No JSON found in response');
       }
@@ -173,22 +160,12 @@ export async function POST(request: NextRequest) {
     // Add translation if requested
     if (target_language && target_language !== 'en') {
       try {
-        const translationPrompt = TRANSLATION_PROMPT
-          .replace('{analysis}', JSON.stringify(analysis))
-          .replace('{target_language}', target_language);
+        const translationPrompt = `Translate the following text to ${target_language}: ${analysis.plainSummary}`;
         
         const translationResult = await model.generateContent(translationPrompt);
         const translationText = translationResult.response.text();
         
-        const translationMatch = translationText.match(/\{[\s\S]*\}/);
-        if (translationMatch) {
-          const translation = JSON.parse(translationMatch[0]);
-          analysis.translation = {
-            language: target_language,
-            summary: translation.summary,
-            key_terms: translation.key_terms
-          };
-        }
+        analysis.translation = translationText;
       } catch (translationError) {
         console.error('Translation failed:', translationError);
         // Continue without translation

@@ -52,7 +52,7 @@ export default function LeasePage() {
         requestBody = formData;
       } else {
         headers['Content-Type'] = 'application/json';
-        requestBody = JSON.stringify({ text: leaseText, language });
+        requestBody = JSON.stringify({ lease_text: leaseText, target_language: language });
       }
 
       const response = await fetch('/api/lease-qa', {
@@ -63,8 +63,8 @@ export default function LeasePage() {
 
       const data = await response.json();
       
-      if (data.ok) {
-        setAnalysis(data.data);
+      if (response.ok) {
+        setAnalysis(data);
         setAnnouncement('Lease analysis completed successfully');
       } else {
         setError(data.error || 'Analysis failed');
