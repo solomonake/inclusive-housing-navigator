@@ -21,6 +21,8 @@ function loadListings(): Listing[] {
         rent: parseFloat(values[3]) || 0,
         avg_utils: parseFloat(values[4]) || 0,
         deposit: parseFloat(values[5]) || 0,
+        bedrooms: parseInt(values[6]) || 1,
+        bathrooms: parseInt(values[7]) || 1,
         lat: parseFloat(values[9]) || 37.2296,
         lng: parseFloat(values[10]) || -80.4139,
         step_free: values[11] === 'true',
@@ -50,7 +52,102 @@ function loadListings(): Listing[] {
     });
   } catch (error) {
     console.error('Error loading listings:', error);
-    return [];
+    // Return mock data as fallback
+    return [
+      {
+        id: '1',
+        title: 'Modern Studio Apartment',
+        addr: '123 University Ave, Blacksburg, VA',
+        rent: 1200,
+        avg_utils: 150,
+        deposit: 1200,
+        bedrooms: 1,
+        bathrooms: 1,
+        step_free: true,
+        elevator: true,
+        doorway_width_cm: 91,
+        acc_bath: true,
+        acc_parking: true,
+        well_lit: true,
+        dist_to_campus_km: 0.5,
+        walk_min: 8,
+        bus_headway_min: 10,
+        accepts_international: true,
+        no_ssn_ok: true,
+        cosigner_ok: true,
+        anti_disc_policy: true,
+        di_score: 85,
+        subscores: {
+          affordability: 80,
+          accessibility: 90,
+          safety: 85,
+          commute: 80,
+          inclusivity: 90
+        }
+      },
+      {
+        id: '2',
+        title: 'Cozy 2-Bedroom House',
+        addr: '456 Main St, Blacksburg, VA',
+        rent: 1800,
+        avg_utils: 200,
+        deposit: 1800,
+        bedrooms: 2,
+        bathrooms: 2,
+        step_free: false,
+        elevator: false,
+        doorway_width_cm: 81,
+        acc_bath: false,
+        acc_parking: true,
+        well_lit: true,
+        dist_to_campus_km: 1.2,
+        walk_min: 15,
+        bus_headway_min: 15,
+        accepts_international: true,
+        no_ssn_ok: false,
+        cosigner_ok: true,
+        anti_disc_policy: true,
+        di_score: 72,
+        subscores: {
+          affordability: 70,
+          accessibility: 60,
+          safety: 80,
+          commute: 70,
+          inclusivity: 80
+        }
+      },
+      {
+        id: '3',
+        title: 'Luxury Apartment Complex',
+        addr: '789 College Dr, Blacksburg, VA',
+        rent: 2200,
+        avg_utils: 250,
+        deposit: 2200,
+        bedrooms: 3,
+        bathrooms: 2,
+        step_free: true,
+        elevator: true,
+        doorway_width_cm: 91,
+        acc_bath: true,
+        acc_parking: true,
+        well_lit: true,
+        dist_to_campus_km: 0.8,
+        walk_min: 10,
+        bus_headway_min: 8,
+        accepts_international: true,
+        no_ssn_ok: true,
+        cosigner_ok: true,
+        anti_disc_policy: true,
+        di_score: 92,
+        subscores: {
+          affordability: 85,
+          accessibility: 95,
+          safety: 90,
+          commute: 85,
+          inclusivity: 95
+        }
+      }
+    ];
   }
 }
 

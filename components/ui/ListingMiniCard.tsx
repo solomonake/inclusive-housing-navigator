@@ -53,7 +53,7 @@ export const ListingMiniCard: React.FC<ListingMiniCardProps> = ({ listing }) => 
         <ScoreDonut 
           value={listing.di_score} 
           label="D&I" 
-          size={48}
+          size="sm"
           colorClass="stroke-blue-600"
         />
       </div>
@@ -62,18 +62,21 @@ export const ListingMiniCard: React.FC<ListingMiniCardProps> = ({ listing }) => 
       {listing.subscores && (
         <div className="flex flex-wrap gap-2 mb-4">
           <ScoreChip 
+            type="affordability"
+            score={listing.subscores.affordability}
             label="Affordability" 
-            value={listing.subscores.affordability} 
             variant="indigo" 
           />
           <ScoreChip 
+            type="accessibility"
+            score={listing.subscores.accessibility}
             label="Accessibility" 
-            value={listing.subscores.accessibility} 
             variant="emerald" 
           />
           <ScoreChip 
+            type="inclusivity"
+            score={listing.subscores.inclusivity}
             label="Inclusivity" 
-            value={listing.subscores.inclusivity} 
             variant="purple" 
           />
         </div>

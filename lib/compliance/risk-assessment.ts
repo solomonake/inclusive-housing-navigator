@@ -13,14 +13,14 @@ export class ComplianceRiskAssessment {
     let complianceScore = 100;
 
     // FHA Compliance Checks
-    if (!listing.anti_discrimination_policy) {
+    if (!listing.anti_disc_policy) {
       flaggedFields.push('Anti-discrimination policy');
       fhaCompliant = false;
       complianceScore -= 20;
       recommendations.push('Implement clear anti-discrimination policy');
     }
 
-    if (!listing.responsive_comms) {
+    if (!listing.anti_disc_policy) {
       flaggedFields.push('Communication responsiveness');
       fhaCompliant = false;
       complianceScore -= 15;
@@ -28,28 +28,28 @@ export class ComplianceRiskAssessment {
     }
 
     // ADA Compliance Checks
-    if (!listing.step_free_entry && !listing.elevator) {
+    if (!listing.step_free && !listing.elevator) {
       flaggedFields.push('Accessible entry');
       adaCompliant = false;
       complianceScore -= 25;
       recommendations.push('Provide step-free entry or elevator access');
     }
 
-    if (listing.doorway_width < 32) {
+    if ((listing.doorway_width_cm || 0) < 81) {
       flaggedFields.push('Doorway width');
       adaCompliant = false;
       complianceScore -= 20;
       recommendations.push('Ensure doorways are at least 32 inches wide');
     }
 
-    if (!listing.accessible_bathroom) {
+    if (!listing.acc_bath) {
       flaggedFields.push('Accessible bathroom');
       adaCompliant = false;
       complianceScore -= 15;
       recommendations.push('Provide accessible bathroom facilities');
     }
 
-    if (!listing.accessible_parking) {
+    if (!listing.acc_parking) {
       flaggedFields.push('Accessible parking');
       adaCompliant = false;
       complianceScore -= 10;
@@ -57,13 +57,13 @@ export class ComplianceRiskAssessment {
     }
 
     // Additional Risk Factors
-    if (listing.management_hours === '9-17' || listing.management_hours === '9-18') {
+    if (listing.mgmt_hours_late === '9-17' || listing.mgmt_hours_late === '9-18') {
       flaggedFields.push('Limited management hours');
       complianceScore -= 5;
       recommendations.push('Consider extending management hours for better accessibility');
     }
 
-    if (!listing.lit_streets) {
+    if (!listing.well_lit) {
       flaggedFields.push('Street lighting');
       complianceScore -= 5;
       recommendations.push('Ensure adequate street lighting for safety');
@@ -99,8 +99,8 @@ export class ComplianceRiskAssessment {
     const assessment = this.assessCompliance(listing);
     
     let report = `# Compliance Assessment Report\n\n`;
-    report += `**Property:** ${listing.name}\n`;
-    report += `**Address:** ${listing.address}\n`;
+    report += `**Property:** ${listing.title}\n`;
+    report += `**Address:** ${listing.addr}\n`;
     report += `**Assessment Date:** ${new Date().toLocaleDateString()}\n\n`;
 
     report += `## Compliance Status\n`;
@@ -142,22 +142,22 @@ export class ComplianceRiskAssessment {
     const violations: string[] = [];
 
     // Entry accessibility
-    if (!listing.step_free_entry && !listing.elevator) {
+    if (!listing.step_free && !listing.elevator) {
       violations.push('No accessible entry - requires step-free entry or elevator');
     }
 
     // Doorway width
-    if (listing.doorway_width < 32) {
-      violations.push(`Doorway width (${listing.doorway_width}") below ADA minimum (32")`);
+    if ((listing.doorway_width_cm || 0) < 81) {
+      violations.push(`Doorway width (${listing.doorway_width_cm}") below ADA minimum (32")`);
     }
 
     // Bathroom accessibility
-    if (!listing.accessible_bathroom) {
+    if (!listing.acc_bath) {
       violations.push('No accessible bathroom facilities');
     }
 
     // Parking accessibility
-    if (!listing.accessible_parking) {
+    if (!listing.acc_parking) {
       violations.push('No accessible parking spaces');
     }
 
@@ -176,17 +176,17 @@ export class ComplianceRiskAssessment {
     }
 
     // SSN requirements
-    if (!listing.no_ssn_required) {
+    if (!listing.no_ssn_ok) {
       risks.push('SSN requirement may exclude certain populations');
     }
 
     // Cosigner policies
-    if (!listing.allows_cosigner) {
+    if (!listing.cosigner_ok) {
       risks.push('No cosigner option may limit accessibility');
     }
 
     // Communication policies
-    if (!listing.responsive_comms) {
+    if (!listing.anti_disc_policy) {
       risks.push('Poor communication may indicate discriminatory practices');
     }
 

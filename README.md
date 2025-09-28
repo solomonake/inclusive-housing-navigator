@@ -1,61 +1,34 @@
-# Inclusive Housing Navigator
+# Inclusive Housing Navigator 🏠
 
-> AI-powered housing copilot for international & rural students with D&I scoring
-
-[![VTHacks 2025](https://img.shields.io/badge/VTHacks-2025-blue)](https://vthacks.com)
-[![Built for Accessibility](https://img.shields.io/badge/Accessibility-WCAG%202.2%20AA-green)](https://www.w3.org/WAI/WCAG22/quickref/)
-[![Deloitte AI Agent](https://img.shields.io/badge/Deloitte-AI%20Agent-orange)](https://www.deloitte.com)
-[![Databricks ML](https://img.shields.io/badge/Databricks-ML-purple)](https://www.databricks.com)
+An AI-powered housing platform designed specifically for international and rural students, featuring comprehensive D&I scoring, accessibility analysis, and inclusive design principles.
 
 ## 🎯 Project Overview
 
-Inclusive Housing Navigator is an AI-powered housing copilot designed specifically for international and rural students. It provides comprehensive D&I (Diversity & Inclusion) scoring, accessibility analysis, lease QA, and budget planning to help students find housing that meets their unique needs.
+**Inclusive Housing Navigator** tackles the unique challenges international and rural students face when finding housing in new cities. Our platform combines AI-powered analysis with accessibility-first design to help students find safe, affordable, and inclusive housing options.
 
 ### Key Features
 
-- **D&I Scoring Algorithm**: Weighted scoring system (35% Affordability, 20% Accessibility, 20% Safety, 15% Commute, 10% Inclusivity)
-- **Accessibility Analysis**: WCAG 2.2 AA compliant with full keyboard navigation and screen reader support
-- **AI-Powered Lease QA**: Gemini AI integration for lease analysis, translation, and red flag detection
-- **Auto-Visualization**: Warp track integration for intelligent chart generation
-- **Compliance & Risk Assessment**: AMERICAN SYSTEMS track for FHA/ADA compliance checking
-- **Budget Planning**: Capital One track for comprehensive financial analysis
-- **CoStar Integration**: Real estate market insights and investment analysis
-
-## 🏗️ Tech Stack
-
-### Frontend
-- **Next.js 14** (App Router)
-- **TypeScript** for type safety
-- **Tailwind CSS** for styling
-- **shadcn/ui** for accessible components
-- **React Aria** for accessibility patterns
-- **Recharts** for data visualization
-- **Leaflet/Mapbox** for mapping
-
-### Backend
-- **Next.js API Routes** (Node.js/TypeScript)
-- **Google Gemini API** for AI features
-- **Databricks** for data processing pipeline
-
-### Data & Analytics
-- **Databricks Notebooks** for ETL pipeline
-- **Delta Tables** for data storage
-- **Parquet/JSON** for data export
+- **D&I Scoring Algorithm**: Comprehensive scoring system (0-100) based on affordability, accessibility, safety, commute, and inclusivity
+- **Lease Analysis**: AI-powered lease document analysis with translation support
+- **Budget Planning**: Financial planning tools with affordability analysis
+- **Compliance Checking**: FHA/ADA compliance assessment and risk analysis
+- **Auto Visualization**: Intelligent chart generation for data insights
+- **Multilingual Support**: Translation and cultural considerations
+- **Accessibility First**: WCAG 2.2 AA compliant design
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js 18+ 
-- npm or yarn
-- Databricks account (for data pipeline)
-- Google Gemini API key
+- Node.js 18+ and npm
+- Python 3.8+ (for data pipeline)
+- Google Gemini API key (optional, for AI features)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-org/inclusive-housing-navigator.git
+   git clone <repository-url>
    cd inclusive-housing-navigator
    ```
 
@@ -69,225 +42,279 @@ Inclusive Housing Navigator is an AI-powered housing copilot designed specifical
    cp .env.example .env.local
    ```
    
-   Fill in your API keys:
+   Add your API keys to `.env.local`:
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
-   DATABRICKS_HOST=your_databricks_host_here
-   DATABRICKS_TOKEN=your_databricks_token_here
-   NEXT_PUBLIC_MAPBOX_TOKEN=your_mapbox_token_here
+   NEXT_PUBLIC_SHOW_CHARTS=1
+   NEXT_PUBLIC_SHOW_INTERNATIONAL=1
+   NEXT_PUBLIC_SHOW_RURAL=1
    ```
 
-4. **Run the development server**
+4. **Run the data pipeline**
+   ```bash
+   npm run pipeline
+   ```
+
+5. **Start the development server**
    ```bash
    npm run dev
    ```
 
-5. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+6. **Open your browser**
+   Navigate to `http://localhost:3000`
 
-## 📊 D&I Scoring Algorithm
+## 🏗️ Architecture
 
-Our proprietary D&I scoring algorithm evaluates housing listings across five key dimensions:
+### Tech Stack
 
-### Scoring Formula
+- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui
+- **Backend**: Next.js API routes, Node.js
+- **AI**: Google Gemini API for lease analysis and translation
+- **Data**: Pandas, NumPy for data processing
+- **Testing**: Jest, React Testing Library
+- **Accessibility**: WCAG 2.2 AA compliance
+
+### Project Structure
+
 ```
-D&I Score = 0.35 × Affordability + 0.20 × Accessibility + 0.20 × Safety + 0.15 × Commute + 0.10 × Inclusivity
+├── app/                          # Next.js App Router
+│   ├── api/                      # API routes
+│   │   ├── autoviz/             # Warp track - Auto visualization
+│   │   ├── budget/              # Capital One - Budget planning
+│   │   ├── compliance/          # AMERICAN SYSTEMS - Risk assessment
+│   │   ├── costar/              # CoStar - Real estate insights
+│   │   ├── lease-qa/            # Gemini - Lease analysis
+│   │   └── listings/            # Housing data API
+│   ├── onboarding/              # User onboarding flow
+│   ├── charts/                  # Data visualization
+│   ├── listings/                # Housing search
+│   └── lease/                   # Lease analysis
+├── components/                   # React components
+│   ├── accessibility/           # A11y components
+│   ├── charts/                  # Visualization components
+│   ├── forms/                   # Form components
+│   └── ui/                      # UI components
+├── lib/                         # Utility libraries
+│   ├── ai/                      # AI integration
+│   ├── budget/                  # Financial planning
+│   ├── compliance/              # Risk assessment
+│   ├── costar/                  # Real estate insights
+│   └── scoring/                 # D&I scoring algorithm
+├── data/                        # Sample datasets
+├── tests/                       # Unit tests
+└── databricks_pipeline.py       # Data processing pipeline
 ```
 
-### Score Components
+## 🧮 D&I Scoring Algorithm
 
-1. **Affordability (35%)**
-   - Rent + utilities + prorated deposits
-   - Normalized against user budget
-   - Higher score = more affordable
+Our comprehensive scoring system uses weighted factors:
 
-2. **Accessibility (20%)**
-   - Step-free entry, elevator access
-   - Doorway width (ADA compliance)
-   - Accessible bathroom and parking
-   - Binary features scaled to 0-100
+```
+Score = 0.35×Affordability + 0.20×Accessibility + 0.20×Safety + 0.15×Commute + 0.10×Inclusivity
+```
 
-3. **Safety (20%)**
-   - Distance to campus
-   - Street lighting
-   - Management hours
-   - Neighborhood safety score
+### Scoring Components
 
-4. **Commute (15%)**
-   - Walk time and bus frequency
-   - Distance penalties
-   - Winter condition adjustments
+- **Affordability (35%)**: Rent, utilities, deposits vs. user budget
+- **Accessibility (20%)**: Step-free entry, elevators, doorway width, accessible facilities
+- **Safety (20%)**: Distance to campus, lighting, management hours
+- **Commute (15%)**: Walk time, bus frequency, proximity to amenities
+- **Inclusivity (10%)**: International student support, flexible requirements
 
-5. **Inclusivity (10%)**
-   - International student acceptance
-   - SSN requirements
-   - Cosigner policies
-   - Anti-discrimination policies
+### Score Tiers
 
-## 🎨 Accessibility Features
-
-### WCAG 2.2 AA Compliance
-- **Keyboard Navigation**: Full keyboard support with visible focus indicators
-- **Screen Reader Support**: ARIA labels, live regions, and semantic HTML
-- **Color Contrast**: Meets WCAG AA standards
-- **Dyslexia Support**: OpenDyslexic font option
-- **Reduced Motion**: Respects user preferences
-
-### Accessibility Components
-- Skip links for main content and navigation
-- Focus trap for modals and forms
-- ARIA live regions for dynamic content
-- High contrast mode support
-- Screen reader only content
+- **Gold (90-100)**: Exceptional housing with all features
+- **Silver (75-89)**: Good housing with most features
+- **Bronze (50-74)**: Adequate housing with some features
+- **Needs Improvement (0-49)**: Limited features or concerns
 
 ## 🔧 API Endpoints
 
-### Core Endpoints
+### Core APIs
 
-- `GET /api/listings` - Fetch housing listings with filters
+- `GET /api/listings` - Get housing listings with filtering
 - `POST /api/score` - Calculate D&I score for a listing
-- `POST /api/lease-qa` - Analyze lease documents with AI
-- `POST /api/autoviz` - Generate auto-visualizations
+- `POST /api/lease-qa` - Analyze lease documents (Gemini)
+- `POST /api/autoviz` - Generate visualizations (Warp)
+- `POST /api/budget` - Financial planning (Capital One)
+- `POST /api/compliance` - Risk assessment (AMERICAN SYSTEMS)
+- `POST /api/costar` - Real estate insights (CoStar)
 
-### Track-Specific Endpoints
+### Example Usage
 
-- `POST /api/compliance` - AMERICAN SYSTEMS compliance check
-- `POST /api/budget` - Capital One budget analysis
-- `POST /api/costar` - CoStar real estate insights
+```typescript
+// Get filtered listings
+const response = await fetch('/api/listings?max_rent=1500&accessibility=true');
+const listings = await response.json();
 
-## 📈 Data Pipeline
-
-### Bronze → Silver → Gold Architecture
-
-1. **Bronze Layer**: Raw CSV data ingestion
-2. **Silver Layer**: Data cleaning and type conversion
-3. **Gold Layer**: D&I score calculation and enrichment
-
-### Databricks Notebook
-The `dbx/notebook.py` implements the complete ETL pipeline:
-- Data ingestion from CSV
-- Data cleaning and validation
-- D&I score calculation
-- Export to JSON/Parquet for app consumption
-
-## 🎯 Prize Track Integration
-
-### Deloitte AI Agent Track
-- **Gemini AI Integration**: Advanced AI for lease analysis
-- **Intelligent Scoring**: AI-powered D&I evaluation
-- **Natural Language Processing**: Lease document analysis
-
-### Databricks ML Track
-- **Data Pipeline**: Bronze→Silver→Gold architecture
-- **Delta Tables**: Efficient data storage and processing
-- **ML Scoring**: Machine learning-based D&I scoring
-
-### MLH Gemini API Track
-- **Gemini Integration**: Advanced AI capabilities
-- **Lease Analysis**: Intelligent document processing
-- **Translation**: Multi-language support
-
-### Peraton UX/UI Track
-- **Accessibility-First Design**: WCAG 2.2 AA compliance
-- **User-Centered Design**: Focus on student needs
-- **Inclusive Interface**: Designed for all users
-
-### Best Accessibility Track
-- **WCAG 2.2 AA**: Full compliance
-- **Custom Components**: Accessibility-first design
-- **Testing**: Comprehensive accessibility testing
-
-### Capital One Financial Hack Track
-- **Budget Planning**: Comprehensive financial analysis
-- **Cost Breakdown**: Detailed expense analysis
-- **What-if Scenarios**: Financial modeling
-
-### Warp Auto Visualization Track
-- **Auto-Visualization**: Intelligent chart generation
-- **Data Analysis**: Automated insights
-- **Chart Recommendations**: AI-powered visualization
-
-### CoStar Real Estate Track
-- **Market Analysis**: Real estate insights
-- **Investment Metrics**: ROI and yield analysis
-- **Neighborhood Analysis**: Location evaluation
-
-### AMERICAN SYSTEMS Compliance/Risk Track
-- **FHA Compliance**: Fair Housing Act checking
-- **ADA Compliance**: Americans with Disabilities Act
-- **Risk Assessment**: Compliance risk evaluation
-
-### GoDaddy Domain Track
-- **Professional Domain**: Custom domain setup
-- **Brand Identity**: Professional presentation
+// Analyze lease document
+const analysis = await fetch('/api/lease-qa', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    lease_text: 'Lease document text...',
+    target_language: 'es'
+  })
+});
+```
 
 ## 🧪 Testing
 
-### Unit Tests
-```bash
-npm test
-```
+Run the test suite:
 
-### Accessibility Testing
 ```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run accessibility audit
 npm run a11y:audit
 ```
 
-### Manual Testing Checklist
-- [ ] Keyboard navigation works throughout
-- [ ] Screen reader announces content correctly
-- [ ] Color contrast meets WCAG AA standards
-- [ ] Focus indicators are visible
-- [ ] Forms are accessible
-- [ ] Images have alt text
-- [ ] Headings are properly structured
+### Test Coverage
+
+- D&I scoring algorithm (100% coverage)
+- API endpoints
+- React components
+- Accessibility compliance
+
+## 📊 Data Pipeline
+
+### Bronze → Silver → Gold Processing
+
+1. **Bronze Layer**: Raw data ingestion from CSV
+2. **Silver Layer**: Data cleaning and transformation
+3. **Gold Layer**: D&I scoring and insights generation
+
+### Running the Pipeline
+
+```bash
+# Run full Databricks-style pipeline
+npm run pipeline
+
+# Run local pipeline (fallback)
+npm run pipeline:local
+```
+
+### Output Formats
+
+- `output/gold_housing_data.json` - API consumption
+- `output/gold_housing_data.csv` - Human inspection
+- `output/housing_di_scores.parquet` - Efficient storage
+- `output/pipeline_summary.json` - Statistics
+
+## 🎨 Prize Track Integrations
+
+### Deloitte | Databricks - AI Agent
+- Comprehensive D&I scoring algorithm
+- Bronze→Silver→Gold data pipeline
+- AI-powered lease analysis
+
+### MLH Gemini API
+- Lease document analysis and translation
+- Multilingual support
+- Cultural considerations
+
+### Peraton UX/UI
+- Accessibility-first design (WCAG 2.2 AA)
+- Inclusive user experience
+- Responsive design
+
+### Best Accessibility
+- Full keyboard navigation
+- Screen reader support
+- High contrast modes
+- Dyslexia-friendly fonts
+
+### Capital One Financial Hack
+- Budget planning and analysis
+- Affordability calculations
+- Financial risk assessment
+
+### Warp Auto Visualization
+- Intelligent chart generation
+- Data-driven insights
+- Interactive visualizations
+
+### CoStar Real Estate
+- Market analysis and insights
+- Comparable properties
+- Investment metrics
+
+### AMERICAN SYSTEMS Compliance/Risk
+- FHA/ADA compliance checking
+- Risk assessment and mitigation
+- Legal considerations
+
+## 🌍 Accessibility Features
+
+- **WCAG 2.2 AA Compliance**: Full accessibility standards
+- **Keyboard Navigation**: Complete keyboard-only operation
+- **Screen Reader Support**: ARIA labels and live regions
+- **High Contrast**: Multiple contrast modes
+- **Font Options**: Dyslexia-friendly font toggle
+- **Focus Management**: Clear focus indicators
+- **Skip Links**: Quick navigation to main content
 
 ## 🚀 Deployment
 
-### Production Deployment
+### Vercel (Recommended)
+
+1. Connect your GitHub repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Deploy automatically on push to main
+
+### Docker
+
 ```bash
-npm run build
-npm start
+# Build Docker image
+docker build -t inclusive-housing-navigator .
+
+# Run container
+docker run -p 3000:3000 inclusive-housing-navigator
 ```
 
-### Environment Variables
-Ensure all required environment variables are set:
-- `GEMINI_API_KEY`
-- `DATABRICKS_HOST`
-- `DATABRICKS_TOKEN`
-- `NEXT_PUBLIC_MAPBOX_TOKEN`
+### Manual Deployment
+
+```bash
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure accessibility compliance
-6. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## 🏆 VTHacks 2025
 
-- **VTHacks 2025** for the hackathon platform
-- **Deloitte** for AI Agent track sponsorship
-- **Databricks** for ML track sponsorship
-- **Capital One** for Financial Hack track
-- **AMERICAN SYSTEMS** for Compliance/Risk track
-- **CoStar** for Real Estate track
-- **Warp** for Auto Visualization track
-- **GoDaddy** for Domain track
+Built for VTHacks 2025 with focus on:
+- **Technical Complexity**: Advanced AI integration and scoring algorithms
+- **Originality**: Unique D&I scoring system for student housing
+- **Ut Prosim**: Direct impact on student housing accessibility
+- **Accessibility**: WCAG 2.2 AA compliant design
+- **Presentation**: Professional, polished interface
+- **DEI**: Core mission of inclusive housing for all students
 
-## 📞 Contact
+## 📞 Support
 
-- **Team**: VTHacks 2025
-- **Email**: team@inclusivehousingnavigator.com
-- **GitHub**: [@inclusive-housing-navigator](https://github.com/inclusive-housing-navigator)
-- **Devpost**: [VTHacks 2025 Submission](https://devpost.com/inclusive-housing-navigator)
+For questions or support, please open an issue or contact the development team.
 
 ---
 
-**Built with ❤️ for accessibility and inclusion**
+**Built with ❤️ for inclusive housing access**

@@ -1,286 +1,600 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ListingCard } from '@/components/ui/ListingCard'
-import { AriaLive } from '@/components/accessibility/aria-live'
+import { Listing } from '@/types'
 import { 
   Search, 
   Filter, 
   MapPin, 
-  SlidersHorizontal,
-  X,
-  RefreshCw,
-  Map,
-  Building2
+  Heart,
+  Star,
+  Wifi,
+  Car,
+  Utensils,
+  Dumbbell,
+  Shield,
+  Accessibility
 } from 'lucide-react'
-import { Listing } from '@/types'
-import { cn } from '@/lib/cn'
-import { MapView } from '@/components/listings/MapView'
+import Link from 'next/link'
 
-// Filter rail component with API integration
-const FilterRail: React.FC<{
+// Simple listing card component
+const ListingCard = ({ listing }: { listing: Listing }) => {
+  const [isLiked, setIsLiked] = useState(false)
+  
+  return (
+    <div className="group cursor-pointer">
+      <div className="relative">
+        {/* Image placeholder */}
+        <div className="aspect-[4/3] bg-gray-200 rounded-xl overflow-hidden">
+          <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-indigo-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                <MapPin className="w-8 h-8 text-white" />
+              </div>
+              <p className="text-sm text-gray-600">Property Image</p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Like button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+            setIsLiked(!isLiked)
+          }}
+          className="absolute top-3 right-3 p-2 rounded-full bg-white/80 hover:bg-white transition-colors"
+        >
+          <Heart 
+            className={`w-5 h-5 ${isLiked ? 'fill-red-500 text-red-500' : 'text-gray-700'}`} 
+          />
+        </button>
+        
+        {/* D&I Score badge */}
+        <div className="absolute top-3 left-3">
+          <Badge className="bg-white/90 text-gray-900 font-semibold">
+            {Math.round(listing.di_score || 0)}/100
+          </Badge>
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div className="mt-3 space-y-1">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900 truncate">
+            {listing.title || 'Property Name'}
+          </h3>
+          <div className="flex items-center gap-1">
+            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+            <span className="text-sm text-gray-600">4.8</span>
+          </div>
+        </div>
+        
+        <p className="text-sm text-gray-600 truncate">
+          {listing.addr || 'Property Address'}
+        </p>
+        
+        <p className="text-sm text-gray-600">
+          {listing.bedrooms || 1} bed • {listing.bathrooms || 1} bath
+        </p>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <span className="font-semibold text-gray-900">
+              ${listing.rent || 0}
+            </span>
+            <span className="text-sm text-gray-600">/month</span>
+          </div>
+          
+          {/* Accessibility indicator */}
+          {listing.step_free && (
+            <div className="flex items-center gap-1 text-green-600">
+              <Accessibility className="w-4 h-4" />
+              <span className="text-xs">Accessible</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Filter bar component
+const FilterBar = ({ 
+  onFiltersChange, 
+  currentFilters 
+}: { 
   onFiltersChange: (filters: any) => void
-  loading: boolean
-}> = ({ onFiltersChange, loading }) => {
-  const [priceRange, setPriceRange] = useState([500, 2000])
+  currentFilters: any 
+}) => {
+  const [showFilters, setShowFilters] = useState(false)
+  const [priceRange, setPriceRange] = useState([500, 3000])
   const [bedrooms, setBedrooms] = useState('any')
-  const [accessibilityMin, setAccessibilityMin] = useState(70)
-  const [inclusivityMin, setInclusivityMin] = useState(60)
-  const [safetyMin, setSafetyMin] = useState(80)
-  const [commuteMax, setCommuteMax] = useState(30)
+  const [accessibility, setAccessibility] = useState(false)
+  const [safety, setSafety] = useState(false)
+  const [inclusivity, setInclusivity] = useState(false)
 
   const applyFilters = () => {
     const filters = {
       maxRent: priceRange[1],
-      minScore: Math.min(accessibilityMin, inclusivityMin, safetyMin),
-      accessibility: accessibilityMin > 0,
+      minRent: priceRange[0],
       bedrooms: bedrooms !== 'any' ? parseInt(bedrooms) : undefined,
+      accessibility,
+      safety,
+      inclusivity
     }
     onFiltersChange(filters)
+    setShowFilters(false)
   }
 
   const clearFilters = () => {
-    setPriceRange([500, 2000])
+    setPriceRange([500, 3000])
     setBedrooms('any')
-    setAccessibilityMin(70)
-    setInclusivityMin(60)
-    setSafetyMin(80)
-    setCommuteMax(30)
+    setAccessibility(false)
+    setSafety(false)
+    setInclusivity(false)
     onFiltersChange({})
   }
 
+  const quickFilters = [
+    { label: 'Under $1000', value: { maxRent: 1000 } },
+    { label: '1-2 Bedrooms', value: { bedrooms: 2 } },
+    { label: 'Accessible', value: { accessibility: true } },
+    { label: 'High Safety', value: { safety: true } },
+    { label: 'International Friendly', value: { inclusivity: true } },
+  ]
+
   return (
-    <Card className="sticky top-20 h-fit">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <SlidersHorizontal className="w-5 h-5" aria-hidden="true" />
-          Filters
-        </CardTitle>
-        <CardDescription>
-          Refine your search to find the perfect home
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Price Range */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-white">
-            Monthly Rent: ${priceRange[0]} - ${priceRange[1]}
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="range"
-              min="300"
-              max="3000"
-              step="50"
-              value={priceRange[0]}
-              onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
-              className="flex-1 focus-ring"
-              aria-label="Minimum price"
-            />
-            <input
-              type="range"
-              min="300"
-              max="3000"
-              step="50"
-              value={priceRange[1]}
-              onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-              className="flex-1 focus-ring"
-              aria-label="Maximum price"
-            />
+    <div className="border-b border-gray-200">
+      {/* Quick Filters */}
+      <div className="flex items-center gap-4 px-6 py-4 overflow-x-auto">
+        {quickFilters.map((filter) => (
+          <button
+            key={filter.label}
+            onClick={() => onFiltersChange(filter.value)}
+            className="flex-shrink-0 px-4 py-2 rounded-full border border-gray-300 hover:border-gray-900 transition-colors whitespace-nowrap"
+          >
+            <span className="text-sm font-medium">{filter.label}</span>
+          </button>
+        ))}
+        
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 hover:border-gray-900 transition-colors"
+        >
+          <Filter className="w-4 h-4" />
+          <span className="text-sm font-medium">All Filters</span>
+        </button>
+      </div>
+
+      {/* Advanced Filters */}
+      {showFilters && (
+        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Price Range */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Price Range: ${priceRange[0]} - ${priceRange[1]}
+              </label>
+              <div className="space-y-2">
+                <input
+                  type="range"
+                  min="500"
+                  max="5000"
+                  step="100"
+                  value={priceRange[0]}
+                  onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
+                  className="w-full"
+                />
+                <input
+                  type="range"
+                  min="500"
+                  max="5000"
+                  step="100"
+                  value={priceRange[1]}
+                  onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            {/* Bedrooms */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Bedrooms
+              </label>
+              <select
+                value={bedrooms}
+                onChange={(e) => setBedrooms(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="any">Any</option>
+                <option value="1">1 Bedroom</option>
+                <option value="2">2 Bedrooms</option>
+                <option value="3">3 Bedrooms</option>
+                <option value="4">4+ Bedrooms</option>
+              </select>
+            </div>
+
+            {/* Accessibility */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Features
+              </label>
+              <div className="space-y-2">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={accessibility}
+                    onChange={(e) => setAccessibility(e.target.checked)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm">Accessible</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={safety}
+                    onChange={(e) => setSafety(e.target.checked)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm">High Safety</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={inclusivity}
+                    onChange={(e) => setInclusivity(e.target.checked)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm">International Friendly</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col justify-end space-y-2">
+              <Button onClick={applyFilters} className="w-full">
+                Apply Filters
+              </Button>
+              <Button onClick={clearFilters} variant="outline" className="w-full">
+                Clear All
+              </Button>
+            </div>
           </div>
-          <p className="text-xs text-white/60">
-            Adjust the range to filter by monthly rent
-          </p>
         </div>
-
-        {/* Bedrooms */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-white">
-            Bedrooms
-          </label>
-          <select
-            value={bedrooms}
-            onChange={(e) => setBedrooms(e.target.value)}
-            className="w-full p-3 border border-white/20 rounded-xl bg-white/10 text-white focus-ring backdrop-blur-md"
-            aria-label="Number of bedrooms"
-          >
-            <option value="any">Any</option>
-            <option value="1">1 bedroom</option>
-            <option value="2">2 bedrooms</option>
-            <option value="3">3 bedrooms</option>
-            <option value="4+">4+ bedrooms</option>
-          </select>
-        </div>
-
-        {/* Accessibility Score */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-white">
-            Min Accessibility: {accessibilityMin}%
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="5"
-            value={accessibilityMin}
-            onChange={(e) => setAccessibilityMin(parseInt(e.target.value))}
-            className="w-full focus-ring"
-            aria-label="Minimum accessibility score"
-          />
-          <p className="text-xs text-white/60">
-            Higher scores mean better accessibility features
-          </p>
-        </div>
-
-        {/* Inclusivity Score */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-white">
-            Min Inclusivity: {inclusivityMin}%
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="5"
-            value={inclusivityMin}
-            onChange={(e) => setInclusivityMin(parseInt(e.target.value))}
-            className="w-full focus-ring"
-            aria-label="Minimum inclusivity score"
-          />
-        </div>
-
-        {/* Safety Score */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-white">
-            Min Safety: {safetyMin}%
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="5"
-            value={safetyMin}
-            onChange={(e) => setSafetyMin(parseInt(e.target.value))}
-            className="w-full focus-ring"
-            aria-label="Minimum safety score"
-          />
-        </div>
-
-        {/* Commute Time */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-white">
-            Max Commute: {commuteMax} minutes
-          </label>
-          <input
-            type="range"
-            min="5"
-            max="60"
-            step="5"
-            value={commuteMax}
-            onChange={(e) => setCommuteMax(parseInt(e.target.value))}
-            className="w-full focus-ring"
-            aria-label="Maximum commute time"
-          />
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-2 pt-4">
-          <Button 
-            variant="gradient"
-            className="flex-1"
-            onClick={applyFilters}
-            disabled={loading}
-          >
-            <Search className="w-4 h-4 mr-2" aria-hidden="true" />
-            Apply
-          </Button>
-          <Button 
-            variant="glass"
-            onClick={clearFilters}
-            disabled={loading}
-          >
-            <X className="w-4 h-4" aria-hidden="true" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   )
 }
 
 export default function ListingsPage() {
   const [listings, setListings] = useState<Listing[]>([])
+  const [filteredListings, setFilteredListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showMap, setShowMap] = useState(false)
-  const [filtersRelaxed, setFiltersRelaxed] = useState(false)
-  const [currentFilters, setCurrentFilters] = useState<any>({})
-  const [selectedListing, setSelectedListing] = useState<Listing | undefined>()
-  const [ariaMessage, setAriaMessage] = useState('')
+  const [filters, setFilters] = useState<any>({})
 
-  const fetchListings = async (filters: any = {}) => {
-    try {
-      setLoading(true)
-      setError(null)
-      setAriaMessage('Loading listings...')
+  const applyFilters = (listings: Listing[], filters: any) => {
+    return listings.filter(listing => {
+      // Price filter
+      if (filters.maxRent && listing.rent > filters.maxRent) return false
+      if (filters.minRent && listing.rent < filters.minRent) return false
       
-      const queryParams = new URLSearchParams()
-      if (filters.maxRent) queryParams.append('max_rent', filters.maxRent.toString())
-      if (filters.minScore) queryParams.append('min_score', filters.minScore.toString())
-      if (filters.accessibility) queryParams.append('accessibility', 'true')
+      // Bedrooms filter
+      if (filters.bedrooms && listing.bedrooms !== filters.bedrooms) return false
       
-      const response = await fetch(`/api/listings?${queryParams.toString()}`)
-      const data = await response.json()
+      // Accessibility filter
+      if (filters.accessibility && !listing.step_free && !listing.elevator) return false
       
-      if (data.error) {
-        setError(data.error)
-        setAriaMessage(`Error: ${data.error}`)
-    } else {
-        setListings(data.listings || [])
-        setFiltersRelaxed(data.meta?.relaxed || false)
-        setAriaMessage(`Found ${data.listings?.length || 0} listings`)
-      }
-    } catch (err) {
-      setError('Failed to fetch listings')
-      setAriaMessage('Failed to fetch listings')
-      console.error('Error fetching listings:', err)
-    } finally {
-      setLoading(false)
-    }
+      // Safety filter
+      if (filters.safety && (!listing.well_lit || (listing.dist_to_campus_km || 0) > 2)) return false
+      
+      // Inclusivity filter
+      if (filters.inclusivity && !listing.accepts_international) return false
+      
+      return true
+    })
+  }
+
+  const handleFiltersChange = (newFilters: any) => {
+    setFilters(newFilters)
+    const filtered = applyFilters(listings, newFilters)
+    setFilteredListings(filtered)
   }
 
   useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/listings')
+        
+        if (response.ok) {
+          const data = await response.json()
+          const listingsData = data.listings || []
+          setListings(listingsData)
+          setFilteredListings(listingsData)
+        } else {
+          // Fallback to mock data
+          const mockListings: Listing[] = [
+            {
+              id: '1',
+              title: 'Modern Studio Apartment',
+              addr: '123 University Ave, Blacksburg, VA',
+              rent: 1200,
+              avg_utils: 150,
+              deposit: 1200,
+              bedrooms: 1,
+              bathrooms: 1,
+              step_free: true,
+              elevator: true,
+              doorway_width_cm: 91,
+              acc_bath: true,
+              acc_parking: true,
+              well_lit: true,
+              dist_to_campus_km: 0.5,
+              walk_min: 8,
+              bus_headway_min: 10,
+              accepts_international: true,
+              no_ssn_ok: true,
+              cosigner_ok: true,
+              anti_disc_policy: true,
+              di_score: 85,
+              subscores: {
+                affordability: 80,
+                accessibility: 90,
+                safety: 85,
+                commute: 80,
+                inclusivity: 90
+              }
+            },
+            {
+              id: '2',
+              title: 'Cozy 2-Bedroom House',
+              addr: '456 Main St, Blacksburg, VA',
+              rent: 1800,
+              avg_utils: 200,
+              deposit: 1800,
+              bedrooms: 2,
+              bathrooms: 2,
+              step_free: false,
+              elevator: false,
+              doorway_width_cm: 81,
+              acc_bath: false,
+              acc_parking: true,
+              well_lit: true,
+              dist_to_campus_km: 1.2,
+              walk_min: 15,
+              bus_headway_min: 15,
+              accepts_international: true,
+              no_ssn_ok: false,
+              cosigner_ok: true,
+              anti_disc_policy: true,
+              di_score: 72,
+              subscores: {
+                affordability: 70,
+                accessibility: 60,
+                safety: 80,
+                commute: 70,
+                inclusivity: 80
+              }
+            },
+            {
+              id: '3',
+              title: 'Luxury Apartment Complex',
+              addr: '789 College Dr, Blacksburg, VA',
+              rent: 2200,
+              avg_utils: 250,
+              deposit: 2200,
+              bedrooms: 3,
+              bathrooms: 2,
+              step_free: true,
+              elevator: true,
+              doorway_width_cm: 91,
+              acc_bath: true,
+              acc_parking: true,
+              well_lit: true,
+              dist_to_campus_km: 0.8,
+              walk_min: 10,
+              bus_headway_min: 8,
+              accepts_international: true,
+              no_ssn_ok: true,
+              cosigner_ok: true,
+              anti_disc_policy: true,
+              di_score: 92,
+              subscores: {
+                affordability: 85,
+                accessibility: 95,
+                safety: 90,
+                commute: 85,
+                inclusivity: 95
+              }
+            },
+            {
+              id: '4',
+              title: 'Budget-Friendly Room',
+              addr: '321 Student St, Blacksburg, VA',
+              rent: 800,
+              avg_utils: 100,
+              deposit: 800,
+              bedrooms: 1,
+              bathrooms: 1,
+              step_free: true,
+              elevator: false,
+              doorway_width_cm: 76,
+              acc_bath: false,
+              acc_parking: false,
+              well_lit: false,
+              dist_to_campus_km: 2.0,
+              walk_min: 25,
+              bus_headway_min: 20,
+              accepts_international: false,
+              no_ssn_ok: false,
+              cosigner_ok: false,
+              anti_disc_policy: false,
+              di_score: 45,
+              subscores: {
+                affordability: 90,
+                accessibility: 30,
+                safety: 40,
+                commute: 30,
+                inclusivity: 30
+              }
+            },
+            {
+              id: '5',
+              title: 'Family Home with Garden',
+              addr: '555 Oak St, Blacksburg, VA',
+              rent: 1600,
+              avg_utils: 180,
+              deposit: 1600,
+              bedrooms: 3,
+              bathrooms: 2,
+              step_free: false,
+              elevator: false,
+              doorway_width_cm: 81,
+              acc_bath: true,
+              acc_parking: true,
+              well_lit: true,
+              dist_to_campus_km: 1.5,
+              walk_min: 20,
+              bus_headway_min: 12,
+              accepts_international: true,
+              no_ssn_ok: true,
+              cosigner_ok: true,
+              anti_disc_policy: true,
+              di_score: 78,
+              subscores: {
+                affordability: 75,
+                accessibility: 70,
+                safety: 85,
+                commute: 75,
+                inclusivity: 85
+              }
+            },
+            {
+              id: '6',
+              title: 'Downtown Loft',
+              addr: '999 Business Blvd, Blacksburg, VA',
+              rent: 1400,
+              avg_utils: 160,
+              deposit: 1400,
+              bedrooms: 2,
+              bathrooms: 1,
+              step_free: true,
+              elevator: true,
+              doorway_width_cm: 86,
+              acc_bath: true,
+              acc_parking: false,
+              well_lit: true,
+              dist_to_campus_km: 1.0,
+              walk_min: 12,
+              bus_headway_min: 10,
+              accepts_international: true,
+              no_ssn_ok: true,
+              cosigner_ok: true,
+              anti_disc_policy: true,
+              di_score: 82,
+              subscores: {
+                affordability: 80,
+                accessibility: 85,
+                safety: 80,
+                commute: 80,
+                inclusivity: 85
+              }
+            },
+            {
+              id: '7',
+              title: 'Budget Studio',
+              addr: '100 Cheap St, Blacksburg, VA',
+              rent: 600,
+              avg_utils: 80,
+              deposit: 600,
+              bedrooms: 1,
+              bathrooms: 1,
+              step_free: false,
+              elevator: false,
+              doorway_width_cm: 70,
+              acc_bath: false,
+              acc_parking: false,
+              well_lit: false,
+              dist_to_campus_km: 3.0,
+              walk_min: 30,
+              bus_headway_min: 30,
+              accepts_international: false,
+              no_ssn_ok: false,
+              cosigner_ok: false,
+              anti_disc_policy: false,
+              di_score: 35,
+              subscores: {
+                affordability: 95,
+                accessibility: 20,
+                safety: 30,
+                commute: 25,
+                inclusivity: 20
+              }
+            },
+            {
+              id: '8',
+              title: 'Premium Penthouse',
+              addr: '500 Luxury Ave, Blacksburg, VA',
+              rent: 3500,
+              avg_utils: 400,
+              deposit: 3500,
+              bedrooms: 4,
+              bathrooms: 3,
+              step_free: true,
+              elevator: true,
+              doorway_width_cm: 100,
+              acc_bath: true,
+              acc_parking: true,
+              well_lit: true,
+              dist_to_campus_km: 0.3,
+              walk_min: 5,
+              bus_headway_min: 5,
+              accepts_international: true,
+              no_ssn_ok: true,
+              cosigner_ok: true,
+              anti_disc_policy: true,
+              di_score: 95,
+              subscores: {
+                affordability: 60,
+                accessibility: 100,
+                safety: 100,
+                commute: 100,
+                inclusivity: 100
+              }
+            }
+          ]
+          setListings(mockListings)
+          setFilteredListings(mockListings)
+        }
+      } catch (err) {
+        console.error('Failed to fetch listings:', err)
+        setError('Failed to load listings')
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchListings()
   }, [])
 
-  const handleFiltersChange = (filters: any) => {
-    setCurrentFilters(filters)
-    fetchListings(filters)
-  }
-
-  const handleListingAction = (action: string, listing: Listing) => {
-    console.log(`${action} clicked for listing:`, listing.id)
-    // Implement action handlers here
-  }
-
   if (loading) {
     return (
-      <div className="section bg-radial bg-grid">
-        <div className="container-page">
-          <AriaLive message="Loading listings..." />
-          <div className="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-8">
-            <div className="space-y-4">
-              <div className="skeleton h-96 rounded-2xl"></div>
-            </div>
-            <div className="space-y-4">
-              <div className="skeleton h-20 rounded-2xl"></div>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="skeleton h-80 rounded-2xl"></div>
-                ))}
-              </div>
+      <div className="min-h-screen bg-white">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="space-y-3">
+                  <div className="aspect-[4/3] bg-gray-200 rounded-xl"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -290,136 +604,63 @@ export default function ListingsPage() {
 
   if (error) {
     return (
-      <div className="section bg-radial bg-grid">
-        <div className="container-page">
-          <AriaLive message={`Error: ${error}`} assertive />
-          <Card className="text-center py-12">
-            <CardContent>
-              <div className="w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Building2 className="w-10 h-10 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Error Loading Listings</h2>
-              <p className="text-white/70 mb-6">{error}</p>
-              <Button variant="gradient" onClick={() => window.location.reload()}>
-                <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
-                Try Again
-              </Button>
-            </CardContent>
-          </Card>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Button onClick={() => window.location.reload()}>
+            Try again
+          </Button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="section bg-radial bg-grid">
-      <div className="container-page">
-        <AriaLive message={ariaMessage} />
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <div className="border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">
+              {filteredListings.length} places to stay
+            </h1>
+            
+            <div className="flex items-center gap-4">
+              <Button variant="outline" className="flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                Show map
+              </Button>
+            </div>
+          </div>
+        </div>
         
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-xl flex items-center justify-center">
-              <Building2 className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-white text-shadow mb-2">
-                Housing Listings
-              </h1>
-              <p className="text-white/70 text-base sm:text-lg leading-relaxed">
-                Discover inclusive, accessible housing with AI-powered D&I scoring
-              </p>
-            </div>
-          </div>
+        <FilterBar onFiltersChange={handleFiltersChange} currentFilters={filters} />
+      </div>
+
+      {/* Listings Grid */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredListings.map((listing) => (
+            <Link key={listing.id} href={`/listings/${listing.id}`}>
+              <ListingCard listing={listing} />
+            </Link>
+          ))}
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-8">
-          {/* Filter Rail */}
-          <div>
-            <FilterRail onFiltersChange={handleFiltersChange} loading={loading} />
+        
+        {filteredListings.length === 0 && !loading && (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No listings found</h3>
+            <p className="text-gray-600">Try adjusting your filters to see more results.</p>
+            <Button 
+              onClick={() => handleFiltersChange({})} 
+              variant="outline" 
+              className="mt-4"
+            >
+              Clear all filters
+            </Button>
           </div>
-
-          {/* Results Section */}
-          <div className="space-y-6">
-            {/* Results Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-white">
-                  {listings.length} {listings.length === 1 ? 'Property' : 'Properties'} Found
-                </h2>
-                {filtersRelaxed && (
-                  <Badge className="mt-2 bg-amber-500/20 text-amber-300 border-amber-500/30">
-                    Filters relaxed to show more results
-                  </Badge>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={showMap ? "gradient" : "glass"}
-                  onClick={() => setShowMap(!showMap)}
-                  className="flex items-center gap-2"
-                >
-                  <Map className="w-4 h-4" aria-hidden="true" />
-                  {showMap ? 'Hide' : 'Show'} Map
-                </Button>
-              </div>
-            </div>
-
-            {/* Map Panel (when shown) */}
-            {showMap && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5" aria-hidden="true" />
-                    Property Locations
-                  </CardTitle>
-                  <CardDescription>
-                    Interactive map showing all available properties
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <MapView 
-                    listings={listings}
-                    selectedListing={selectedListing}
-                    onListingSelect={setSelectedListing}
-                  />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Results Grid */}
-            {listings.length === 0 ? (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <div className="w-20 h-20 bg-gradient-to-br from-gray-400 to-gray-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Building2 className="w-10 h-10 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">No Properties Found</h3>
-                  <p className="text-white/70 mb-6">
-                    Try adjusting your filters to see more results
-                  </p>
-                  <Button variant="glass" onClick={clearFilters}>
-                    <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
-                    Reset Filters
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {listings.map((listing) => (
-                <ListingCard
-                  key={listing.id}
-                  listing={listing}
-                    onSave={(listing) => handleListingAction('save', listing)}
-                    onCompare={(listing) => handleListingAction('compare', listing)}
-                    onDetails={(listing) => handleListingAction('details', listing)}
-                    onLeaseQA={(listing) => handleListingAction('lease-qa', listing)}
-                />
-              ))}
-              </div>
-            )}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )

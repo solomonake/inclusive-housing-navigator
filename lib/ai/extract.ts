@@ -1,5 +1,5 @@
 import mammoth from 'mammoth';
-import * as pdfParse from 'pdf-parse';
+import pdfParse from 'pdf-parse';
 
 /**
  * Extract text from various file formats

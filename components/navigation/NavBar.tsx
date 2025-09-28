@@ -4,66 +4,73 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { FEATURE_FLAGS } from "@/lib/feature-flags";
 import { 
   Building2, 
   Home, 
   FileText, 
   BarChart3, 
   Globe, 
-  Trees, 
-  Info
+  Trees
 } from "lucide-react";
 
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Listings', href: '/listings', icon: Building2 },
   { name: 'Lease QA', href: '/lease', icon: FileText },
-  { name: 'Charts', href: '/charts', icon: BarChart3 },
-  { name: 'International', href: '/international', icon: Globe },
-  { name: 'Rural', href: '/rural', icon: Trees },
+  ...(FEATURE_FLAGS.SHOW_CHARTS ? [{ name: 'Charts', href: '/charts', icon: BarChart3 }] : []),
+  ...(FEATURE_FLAGS.SHOW_INTERNATIONAL ? [{ name: 'International', href: '/international', icon: Globe }] : []),
+  ...(FEATURE_FLAGS.SHOW_RURAL ? [{ name: 'Rural', href: '/rural', icon: Trees }] : []),
 ];
 
 export function NavBar() {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-[var(--border)] glass">
-      <div className="container-page">
+    <nav className="sticky top-0 z-50 w-full bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-6">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link 
             href="/" 
-            className="flex items-center gap-2 text-lg font-bold text-white hover:text-indigo-300 transition-colors focus-ring rounded-lg p-1"
+            className="flex items-center gap-2 text-lg font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
           >
             <Building2 className="h-6 w-6" aria-hidden="true" />
             <span>IH Navigator</span>
           </Link>
 
           {/* Navigation Links */}
-          <div className="flex items-center gap-1 mr-4">
+          <div className="hidden md:flex items-center gap-8">
             {navigation.map((item) => {
               const isActive = pathname === item.href;
-              const Icon = item.icon;
               
               return (
                 <Link
                   key={item.name}
                   href={item.href}
                   className={`
-                    flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors focus-ring
+                    text-sm font-medium transition-colors hover:text-indigo-600
                     ${isActive 
-                      ? 'bg-indigo-500 text-white shadow-lg' 
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                      ? 'text-indigo-600' 
+                      : 'text-gray-700'
                     }
                   `}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <Icon className="h-4 w-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">{item.name}</span>
+                  {item.name}
                 </Link>
               );
             })}
+          </div>
+
+          {/* Mobile menu and theme toggle */}
+          <div className="flex items-center gap-4">
             <ThemeToggle />
+            <button className="md:hidden p-2 rounded-lg hover:bg-gray-100">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>

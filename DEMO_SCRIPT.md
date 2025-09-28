@@ -1,208 +1,180 @@
-# Inclusive Housing Navigator - Demo Script
+# Inclusive Housing Navigator - Demo Script 🏠
 
-## 🎯 5-Minute Demo Flow
+## 🎯 Demo Overview (5 minutes)
 
-### 1. Introduction (30 seconds)
-**"Welcome to Inclusive Housing Navigator, an AI-powered housing copilot for international and rural students. We're solving the challenge of finding accessible, affordable, and inclusive housing."**
+This demo showcases the **Inclusive Housing Navigator**, an AI-powered platform designed specifically for international and rural students to find safe, affordable, and accessible housing.
 
-**Key Points:**
-- AI-powered housing copilot
-- Focus on international and rural students
-- D&I scoring for transparency
-- Accessibility-first design
+## 🚀 Quick Start Demo
 
----
+### 1. **Start the Application** (30 seconds)
+```bash
+npm run dev
+```
+- Open `http://localhost:3000`
+- Show the clean, Airbnb-inspired interface
+- Highlight the accessibility-first design
 
-### 2. Onboarding Experience (1 minute)
-**"Let's start with the onboarding process that captures user preferences and accessibility needs."**
+### 2. **User Onboarding Flow** (1 minute)
+- Click "Get Started" or navigate to `/onboarding`
+- Walk through the 5-step onboarding:
+  - **Budget & Preferences**: Set $2000 budget, 2 bedrooms
+  - **Accessibility Needs**: Select step-free entry, elevator access
+  - **Commute Preferences**: Set 15-minute walk, 20-minute bus
+  - **Cultural Needs**: Mark as international student, select Spanish
+  - **Location & Safety**: Set 1km from campus, high safety priority
 
-**Demo Steps:**
-1. **Show onboarding form** - 4-step process
-2. **Highlight accessibility options** - Wheelchair accessible, visual accessibility, etc.
-3. **Demonstrate international student features** - Language selection, SSN requirements, cosigner options
-4. **Show budget preferences** - Monthly budget, max rent, bedroom/bathroom requirements
+### 3. **Housing Search & Filtering** (1.5 minutes)
+- Navigate to `/listings`
+- Show the comprehensive filtering system:
+  - **Quick Filters**: "Under $1000", "Accessible", "International Friendly"
+  - **Advanced Filters**: Price range sliders, bedroom count, feature checkboxes
+- Demonstrate real-time filtering results
+- Show the D&I score badges on each listing
 
-**Key Points:**
-- Comprehensive preference capture
-- Accessibility needs assessment
-- International student considerations
-- Budget planning integration
+### 4. **D&I Scoring Deep Dive** (1 minute)
+- Click on a high-scoring listing
+- Show the detailed score breakdown:
+  - **Affordability (35%)**: Rent vs. budget analysis
+  - **Accessibility (20%)**: Step-free entry, elevator, doorway width
+  - **Safety (20%)**: Distance to campus, lighting, management hours
+  - **Commute (15%)**: Walk time, bus frequency
+  - **Inclusivity (10%)**: International student support, flexible requirements
+- Explain the weighted scoring algorithm
 
----
+### 5. **AI-Powered Features** (1 minute)
+- Navigate to `/lease` for lease analysis
+- Upload a sample lease document (or use mock data)
+- Show Gemini-powered analysis:
+  - **Summary**: Key terms and conditions
+  - **Red Flags**: Concerning clauses
+  - **Translation**: Spanish translation of key terms
+  - **Accessibility Notes**: ADA compliance check
+  - **International Student Notes**: SSN requirements, co-signer policies
 
-### 3. D&I Scoring Algorithm (1.5 minutes)
-**"Our proprietary D&I scoring algorithm evaluates housing across five key dimensions with weighted scoring."**
+## 🏆 Prize Track Demonstrations
 
-**Demo Steps:**
-1. **Show scoring formula** - 35% Affordability, 20% Accessibility, 20% Safety, 15% Commute, 10% Inclusivity
-2. **Demonstrate score breakdown** - Show individual component scores
-3. **Explain rationale** - Why each score was calculated
-4. **Show tier classification** - Gold/Silver/Bronze/Needs Improvement
+### **Deloitte | Databricks - AI Agent**
+- Show the data pipeline: `npm run pipeline`
+- Explain Bronze → Silver → Gold processing
+- Display the D&I scoring algorithm in action
 
-**Key Points:**
-- Transparent scoring methodology
-- Detailed rationale for each score
-- Tier-based classification
-- Weighted importance of factors
+### **MLH Gemini API**
+- Demonstrate lease analysis with translation
+- Show multilingual support in onboarding
+- Highlight cultural considerations
 
----
+### **Peraton UX/UI**
+- Walk through accessibility features:
+  - Keyboard navigation (Tab through interface)
+  - Screen reader support (ARIA labels)
+  - High contrast mode
+  - Skip links
 
-### 4. AI-Powered Features (1.5 minutes)
-**"Let's explore the AI-powered features that make housing search intelligent and accessible."**
+### **Best Accessibility**
+- Show WCAG 2.2 AA compliance
+- Demonstrate focus management
+- Highlight inclusive design principles
 
-**Demo Steps:**
-1. **Lease QA Analysis** - Upload lease document, show AI analysis
-2. **Auto-Visualization** - Generate charts automatically
-3. **Budget Planning** - Capital One track integration
-4. **Compliance Checking** - AMERICAN SYSTEMS track integration
+### **Capital One Financial Hack**
+- Navigate to budget analysis
+- Show affordability calculations
+- Demonstrate "what-if" scenarios
+- Display financial risk assessment
 
-**Key Points:**
-- Gemini AI integration
-- Intelligent document analysis
-- Auto-visualization capabilities
-- Comprehensive compliance checking
+### **Warp Auto Visualization**
+- Navigate to `/charts`
+- Show auto-generated visualizations
+- Explain chart recommendations
+- Demonstrate data insights
 
----
+### **CoStar Real Estate**
+- Show market analysis API
+- Display comparable properties
+- Highlight investment metrics
+- Explain demand indicators
 
-### 5. Accessibility Demo (1 minute)
-**"Our platform is built with accessibility as a core principle, not an afterthought."**
+### **AMERICAN SYSTEMS Compliance/Risk**
+- Show compliance checking API
+- Display FHA/ADA violation detection
+- Highlight risk mitigation strategies
+- Explain legal considerations
 
-**Demo Steps:**
-1. **Keyboard Navigation** - Navigate entire app with keyboard only
-2. **Screen Reader Support** - Show ARIA labels and announcements
-3. **High Contrast Mode** - Toggle accessibility features
-4. **Dyslexia-Friendly Fonts** - Show font options
+## 🎨 Key Features to Highlight
 
-**Key Points:**
-- WCAG 2.2 AA compliance
+### **Technical Complexity**
+- Advanced D&I scoring algorithm with weighted factors
+- AI-powered lease analysis with Gemini
+- Comprehensive data pipeline (Bronze→Silver→Gold)
+- Real-time filtering and search
+
+### **Originality**
+- Unique D&I scoring system for student housing
+- Accessibility-first design approach
+- Cultural considerations for international students
+- AI-powered lease translation and analysis
+
+### **Ut Prosim (Impact)**
+- Directly addresses housing challenges for international students
+- Promotes accessibility and inclusion
+- Reduces housing discrimination
+- Supports student success and well-being
+
+### **Accessibility**
+- WCAG 2.2 AA compliant design
 - Full keyboard navigation
-- Screen reader compatibility
-- Inclusive design principles
+- Screen reader support
+- High contrast modes
+- Dyslexia-friendly fonts
+
+### **Presentation Polish**
+- Clean, modern Airbnb-inspired interface
+- Responsive design
+- Professional data visualizations
+- Intuitive user experience
+
+### **DEI (Diversity, Equity, Inclusion)**
+- Core mission of inclusive housing
+- International student support
+- Accessibility considerations
+- Cultural sensitivity
+- Anti-discrimination features
+
+## 🔧 Technical Demo Points
+
+### **Data Pipeline**
+```bash
+# Show the data processing
+npm run pipeline
+# Explain Bronze → Silver → Gold transformation
+# Show D&I score calculations
+```
+
+### **API Endpoints**
+- `GET /api/listings` - Housing data with filtering
+- `POST /api/lease-qa` - AI lease analysis
+- `POST /api/autoviz` - Auto visualization
+- `POST /api/budget` - Financial planning
+- `POST /api/compliance` - Risk assessment
+- `POST /api/costar` - Real estate insights
+
+### **Testing**
+```bash
+# Show comprehensive test suite
+npm test
+# Demonstrate 100% test coverage for scoring algorithm
+```
+
+## 🎯 Demo Conclusion
+
+**"Inclusive Housing Navigator represents a comprehensive solution to the housing challenges faced by international and rural students. By combining AI-powered analysis with accessibility-first design, we're not just building a housing platform—we're creating a more inclusive future for student housing."**
+
+### **Key Takeaways:**
+1. **Technical Excellence**: Advanced AI integration and scoring algorithms
+2. **Social Impact**: Directly addresses student housing inequities
+3. **Accessibility**: WCAG 2.2 AA compliant design
+4. **Innovation**: Unique D&I scoring system
+5. **Completeness**: Full-stack solution with comprehensive features
 
 ---
 
-### 6. Impact & Conclusion (30 seconds)
-**"Inclusive Housing Navigator is more than just a housing search tool - it's a platform for equity and inclusion."**
-
-**Key Points:**
-- Student success stories
-- Accessibility impact
-- Future roadmap
-- Call to action
-
----
-
-## 🎯 Demo Tips
-
-### Before the Demo
-- [ ] Test all features beforehand
-- [ ] Have sample data ready
-- [ ] Practice keyboard navigation
-- [ ] Prepare backup plans
-
-### During the Demo
-- [ ] Speak clearly and at moderate pace
-- [ ] Highlight accessibility features
-- [ ] Show real data and calculations
-- [ ] Engage with audience
-
-### After the Demo
-- [ ] Be ready for questions
-- [ ] Have technical details ready
-- [ ] Prepare impact metrics
-- [ ] Show future roadmap
-
----
-
-## 🎯 Key Messages
-
-### Technical Excellence
-- **AI Integration**: Advanced Gemini API integration
-- **Data Pipeline**: Sophisticated bronze→silver→gold architecture
-- **Scoring Algorithm**: Complex weighted D&I evaluation
-- **Accessibility**: WCAG 2.2 AA compliance
-
-### Social Impact
-- **Student Focus**: Specifically designed for international and rural students
-- **Accessibility**: Removes barriers for students with disabilities
-- **Financial Planning**: Helps students make informed decisions
-- **Compliance**: Ensures fair housing practices
-
-### Innovation
-- **D&I Scoring**: Novel approach to housing evaluation
-- **Multi-track Integration**: Combines multiple prize tracks
-- **Accessibility-First**: Built with inclusion as core principle
-- **AI-Powered**: Intelligent lease analysis and visualization
-
----
-
-## 🎯 Q&A Preparation
-
-### Technical Questions
-- **How does the D&I scoring work?** - Weighted algorithm across 5 dimensions
-- **What AI models do you use?** - Google Gemini API for lease analysis
-- **How do you ensure accessibility?** - WCAG 2.2 AA compliance with custom components
-- **What's your data pipeline?** - Databricks bronze→silver→gold architecture
-
-### Impact Questions
-- **Who benefits from this tool?** - International and rural students, students with disabilities
-- **How do you measure success?** - D&I scores, accessibility compliance, user feedback
-- **What's the scalability?** - Multi-university deployment, landlord partnerships
-- **How do you ensure fairness?** - Compliance checking, transparent scoring
-
-### Future Questions
-- **What's next?** - Real-time data, mobile app, community features
-- **How do you plan to scale?** - University partnerships, policy advocacy
-- **What's the business model?** - Freemium for students, premium for landlords
-- **How do you ensure sustainability?** - Revenue sharing, partnerships
-
----
-
-## 🎯 Demo Checklist
-
-### Pre-Demo Setup
-- [ ] Test all features
-- [ ] Prepare sample data
-- [ ] Check accessibility features
-- [ ] Practice keyboard navigation
-- [ ] Prepare backup plans
-
-### Demo Execution
-- [ ] Start with problem statement
-- [ ] Show onboarding process
-- [ ] Demonstrate D&I scoring
-- [ ] Highlight AI features
-- [ ] Show accessibility features
-- [ ] End with impact statement
-
-### Post-Demo
-- [ ] Be ready for questions
-- [ ] Have technical details ready
-- [ ] Prepare impact metrics
-- [ ] Show future roadmap
-
----
-
-## 🎯 Success Metrics
-
-### Technical Metrics
-- **D&I Score Accuracy**: 95%+ accuracy in scoring
-- **Accessibility Compliance**: WCAG 2.2 AA compliance
-- **AI Analysis Speed**: <5 seconds for lease analysis
-- **Data Pipeline Efficiency**: Real-time scoring updates
-
-### Impact Metrics
-- **Student Success**: 90%+ user satisfaction
-- **Accessibility Impact**: 100% keyboard navigation
-- **Financial Planning**: 85%+ budget accuracy
-- **Compliance**: 100% FHA/ADA compliance checking
-
-### Innovation Metrics
-- **D&I Scoring**: Novel weighted algorithm
-- **AI Integration**: Advanced Gemini API usage
-- **Accessibility**: WCAG 2.2 AA compliance
-- **Multi-track**: 10+ prize track integration
-
----
-
-**Remember: This demo is about showing how technology can create a more inclusive and accessible housing search experience for all students.**
+**Built with ❤️ for inclusive housing access at VTHacks 2025**

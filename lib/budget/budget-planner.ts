@@ -5,7 +5,7 @@ export class BudgetPlanner {
    * Calculate total monthly cost for a listing
    */
   static calculateTotalMonthlyCost(listing: Listing): number {
-    return listing.rent + listing.utilities + (listing.deposits / 12);
+    return listing.rent + (listing.avg_utils || 0) + ((listing.deposit || 0) / 12);
   }
 
   /**
@@ -23,9 +23,9 @@ export class BudgetPlanner {
     last_month: number;
     security_deposit: number;
   } {
-    const securityDeposit = listing.deposits;
-    const firstMonth = listing.rent + listing.utilities + securityDeposit;
-    const lastMonth = listing.rent + listing.utilities;
+    const securityDeposit = listing.deposit || 0;
+    const firstMonth = listing.rent + (listing.avg_utils || 0) + securityDeposit;
+    const lastMonth = listing.rent + (listing.avg_utils || 0);
 
     return {
       first_month: firstMonth,
@@ -61,21 +61,21 @@ export class BudgetPlanner {
     // Utilities increase scenarios
     scenarios.push({
       scenario: 'Utilities increase by 20%',
-      impact: 'Monthly cost would increase by $' + (listing.utilities * 0.20).toFixed(2),
-      new_cost: baseCost + (listing.utilities * 0.20)
+      impact: 'Monthly cost would increase by $' + ((listing.avg_utils || 0) * 0.20).toFixed(2),
+      new_cost: baseCost + ((listing.avg_utils || 0) * 0.20)
     });
 
     scenarios.push({
       scenario: 'Utilities increase by 50%',
-      impact: 'Monthly cost would increase by $' + (listing.utilities * 0.50).toFixed(2),
-      new_cost: baseCost + (listing.utilities * 0.50)
+      impact: 'Monthly cost would increase by $' + ((listing.avg_utils || 0) * 0.50).toFixed(2),
+      new_cost: baseCost + ((listing.avg_utils || 0) * 0.50)
     });
 
     // Combined scenarios
     scenarios.push({
       scenario: 'Both rent and utilities increase by 10%',
-      impact: 'Monthly cost would increase by $' + ((listing.rent + listing.utilities) * 0.10).toFixed(2),
-      new_cost: baseCost + ((listing.rent + listing.utilities) * 0.10)
+      impact: 'Monthly cost would increase by $' + ((listing.rent + (listing.avg_utils || 0)) * 0.10).toFixed(2),
+      new_cost: baseCost + ((listing.rent + (listing.avg_utils || 0)) * 0.10)
     });
 
     // Emergency fund scenarios
@@ -116,12 +116,12 @@ export class BudgetPlanner {
     }
 
     // Deposit recommendations
-    if (listing.deposits > userBudget * 2) {
+    if ((listing.deposit || 0) > userBudget * 2) {
       recommendations.push('💰 High deposit required - ensure you have sufficient savings');
     }
 
     // Utilities recommendations
-    if (!listing.utilities_included) {
+    if (!listing.incl_utils) {
       recommendations.push('⚡ Utilities not included - budget for variable costs');
     }
 
@@ -184,8 +184,8 @@ export class BudgetPlanner {
       const valueScore = (userPreferences.budget - totalCost) / userPreferences.budget * 100;
       
       return {
-        listing_id: listing.id,
-        name: listing.name,
+        listing_id: parseInt(listing.id),
+        name: listing.title,
         total_cost: totalCost,
         affordability_ratio: affordabilityRatio,
         value_score: Math.max(0, valueScore)
@@ -208,7 +208,7 @@ export class BudgetPlanner {
 
     for (let month = 1; month <= months; month++) {
       const rent = listing.rent;
-      const utilities = listing.utilities;
+      const utilities = listing.avg_utils || 0;
       const total = rent + utilities;
       cumulative += total;
 

@@ -51,36 +51,26 @@ export const HealthStatus: React.FC<HealthStatusProps> = () => {
   }
 
   return (
-    <div className="flex items-center gap-4 text-sm">
-      <span className="text-gray-600 dark:text-gray-400">Integration Status:</span>
+    <div className="flex items-center justify-center gap-4">
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1">
-          <div 
-            className={`w-2 h-2 rounded-full ${
-              health.hasGemini ? 'bg-green-500' : 'bg-gray-400'
-            }`}
-            title={health.hasGemini ? 'Gemini API connected' : 'Gemini API not configured'}
-          ></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">Gemini</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div 
-            className={`w-2 h-2 rounded-full ${
-              health.hasDatabricks ? 'bg-green-500' : 'bg-gray-400'
-            }`}
-            title={health.hasDatabricks ? 'Databricks connected' : 'Databricks not configured'}
-          ></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">Databricks</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div 
-            className={`w-2 h-2 rounded-full ${
-              health.hasMapbox ? 'bg-green-500' : 'bg-gray-400'
-            }`}
-            title={health.hasMapbox ? 'Mapbox connected' : 'Mapbox not configured'}
-          ></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">Mapbox</span>
-        </div>
+        <div 
+          className={`w-3 h-3 rounded-full ${
+            health.hasGemini ? 'bg-green-500' : 'bg-gray-400'
+          }`}
+          title={health.hasGemini ? 'Gemini API connected' : 'Gemini API not configured'}
+        ></div>
+        <div 
+          className={`w-3 h-3 rounded-full ${
+            health.hasDatabricks ? 'bg-green-500' : 'bg-gray-400'
+          }`}
+          title={health.hasDatabricks ? 'Databricks connected' : 'Databricks not configured'}
+        ></div>
+        <div 
+          className={`w-3 h-3 rounded-full ${
+            health.hasMapbox ? 'bg-green-500' : 'bg-gray-400'
+          }`}
+          title={health.hasMapbox ? 'Mapbox connected' : 'Mapbox not configured'}
+        ></div>
       </div>
     </div>
   );

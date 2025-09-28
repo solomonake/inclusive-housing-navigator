@@ -222,8 +222,8 @@ export const ResultsClient: React.FC<ResultsClientProps> = ({ listings, compareI
             </h3>
             <MapView
               listings={filteredListings}
-              selectedId={selectedListingId}
-              onSelect={setSelectedListingId}
+              selectedListing={selectedListingId ? filteredListings.find(l => l.id === selectedListingId) : undefined}
+              onListingSelect={(listing) => setSelectedListingId(listing.id)}
             />
           </div>
         </div>
@@ -242,7 +242,7 @@ export const ResultsClient: React.FC<ResultsClientProps> = ({ listings, compareI
               <ScoreDonut 
                 value={selectedListing.di_score} 
                 label="D&I Score" 
-                size={80}
+                size="lg"
                 colorClass="stroke-blue-600"
               />
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mt-2">
@@ -256,11 +256,11 @@ export const ResultsClient: React.FC<ResultsClientProps> = ({ listings, compareI
             {/* Score Chips */}
             {selectedListing.subscores && (
               <div className="flex flex-wrap gap-2 justify-center">
-                <ScoreChip label="Affordability" value={selectedListing.subscores.affordability} variant="indigo" />
-                <ScoreChip label="Accessibility" value={selectedListing.subscores.accessibility} variant="emerald" />
-                <ScoreChip label="Safety" value={selectedListing.subscores.safety} variant="amber" />
-                <ScoreChip label="Commute" value={selectedListing.subscores.commute} variant="sky" />
-                <ScoreChip label="Inclusivity" value={selectedListing.subscores.inclusivity} variant="purple" />
+                <ScoreChip type="affordability" score={selectedListing.subscores.affordability} label="Affordability" variant="indigo" />
+                <ScoreChip type="accessibility" score={selectedListing.subscores.accessibility} label="Accessibility" variant="emerald" />
+                <ScoreChip type="safety" score={selectedListing.subscores.safety} label="Safety" variant="amber" />
+                <ScoreChip type="commute" score={selectedListing.subscores.commute} label="Commute" variant="sky" />
+                <ScoreChip type="inclusivity" score={selectedListing.subscores.inclusivity} label="Inclusivity" variant="purple" />
               </div>
             )}
 

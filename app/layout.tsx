@@ -43,11 +43,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
-        <div className="bg-radial bg-grid min-h-screen flex flex-col">
+      <body className="min-h-screen bg-white text-gray-900">
+        <div className="min-h-screen flex flex-col">
           <a 
             href="#main" 
-            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-[var(--primary)] text-white px-4 py-2 rounded-lg text-sm font-medium focus-ring"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             Skip to main content
           </a>

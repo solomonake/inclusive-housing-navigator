@@ -130,9 +130,9 @@
 
   .bg-grid {
     background-image: 
-      linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
-    background-size: 24px 24px, 24px 24px;
+      linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+    background-size: 32px 32px, 32px 32px;
     background-position: -1px -1px;
   }
 

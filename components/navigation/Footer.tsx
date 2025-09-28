@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Building2 } from "lucide-react";
+import { Building2, Globe } from "lucide-react";
 
 export function Footer() {
+
   return (
     <footer className="border-t border-[var(--border)] glass mt-auto">
       <div className="container-page py-8">
@@ -19,7 +20,7 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Links */}
+          {/* Links and Language Selector */}
           <div className="flex items-center gap-6 text-sm">
             <Link 
               href="/about" 
@@ -38,6 +39,11 @@ export function Footer() {
             <span className="text-white/60">
               Bias & Limitations
             </span>
+            <span className="text-white/40">•</span>
+            <div className="flex items-center gap-2">
+              <Globe className="h-4 w-4 text-white/60" aria-hidden="true" />
+              <span className="text-white/60 text-sm">English</span>
+            </div>
           </div>
         </div>
 

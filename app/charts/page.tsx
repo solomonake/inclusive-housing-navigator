@@ -480,7 +480,7 @@ export default function ChartsPage() {
               <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
                 <h4 className="font-semibold text-purple-300 mb-2">📍 Location</h4>
                 <ul className="text-sm text-purple-200 space-y-1">
-                  <li>• Average distance to campus: {Math.round(listings.reduce((sum, l) => sum + l.dist_to_campus_km, 0) / listings.length * 10) / 10} km</li>
+                  <li>• Average distance to campus: {Math.round(listings.reduce((sum, l) => sum + (l.dist_to_campus_km || 0), 0) / listings.length * 10) / 10} km</li>
                   <li>• Walkable properties (≤15 min): {listings.filter(l => (l.walk_min || 0) <= 15).length}</li>
                   <li>• International friendly: {listings.filter(l => l.accepts_international).length}</li>
                 </ul>

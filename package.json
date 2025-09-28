@@ -9,7 +9,10 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "a11y:audit": "axe-core --dir . --format json"
+    "test:coverage": "jest --coverage",
+    "a11y:audit": "axe-core --dir . --format json",
+    "pipeline": "python3 databricks_pipeline.py",
+    "pipeline:local": "python3 local_pipeline.py"
   },
   "dependencies": {
     "@google/generative-ai": "^0.1.0",
@@ -72,6 +75,7 @@
     "@axe-core/react": "^4.8.0",
     "@testing-library/jest-dom": "^6.1.0",
     "@testing-library/react": "^13.4.0",
+    "@types/pdf-parse": "^1.1.5",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "axe-core": "^4.7.0",

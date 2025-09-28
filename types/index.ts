@@ -19,6 +19,8 @@ export interface Listing {
   deposit?: number;
   fees?: number;
   incl_utils?: boolean;
+  bedrooms?: number;
+  bathrooms?: number;
   
   // Accessibility features
   step_free?: boolean;
@@ -88,7 +90,7 @@ export interface DIScore {
   };
 }
 
-export interface ScoredListing extends Listing {
+export interface ScoredListing extends Omit<Listing, 'di_score'> {
   di_score: DIScore;
 }
 

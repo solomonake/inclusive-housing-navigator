@@ -10,16 +10,16 @@ import { AriaLive } from '@/components/accessibility/aria-live';
 
 export const QuickStart: React.FC = () => {
   const [monthlyBudget, setMonthlyBudget] = useState<number | ''>('');
-  const [maxRent, setMaxRent] = useState<number | ''>('');
   const [needsAccessibility, setNeedsAccessibility] = useState<boolean>(false);
-  const [language, setLanguage] = useState<string>('en');
   const [topPicks, setTopPicks] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [ariaLiveMessage, setAriaLiveMessage] = useState<string>('');
   const router = useRouter();
 
-  const isFormValid = monthlyBudget !== '' && monthlyBudget > 0 && maxRent !== '' && maxRent > 0;
+  // Auto-derive max rent as 80% of monthly budget
+  const maxRent = monthlyBudget ? Math.round(monthlyBudget * 0.8) : '';
+  const isFormValid = monthlyBudget !== '' && monthlyBudget > 0;
 
   const fetchListings = async () => {
     setIsLoading(true);
@@ -84,19 +84,28 @@ export const QuickStart: React.FC = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+    <div className="glass p-8 rounded-2xl border border-white/10 backdrop-blur-sm">
       <AriaLive message={ariaLiveMessage} />
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-white text-shadow mb-2">
+            Find Your Perfect Home in Minutes
+          </h2>
+          <p className="text-white/70">
+            Get personalized housing recommendations based on your budget and needs
+          </p>
+        </div>
+
+        <div className="max-w-md mx-auto space-y-4">
           <div>
-            <label htmlFor="monthlyBudget" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="monthlyBudget" className="block text-sm font-medium text-white mb-2">
               Monthly Budget ($)
             </label>
             <input
               type="number"
               id="monthlyBudget"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-white/20 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
               value={monthlyBudget}
               onChange={(e) => setMonthlyBudget(Number(e.target.value))}
               min="0"
@@ -104,64 +113,28 @@ export const QuickStart: React.FC = () => {
               aria-describedby="budget-helper"
               placeholder="1500"
             />
-            <p id="budget-helper" className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Your total budget including rent and utilities
+            <p id="budget-helper" className="text-xs text-white/60 mt-1">
+              Max rent will be set to ${maxRent} (80% of budget)
             </p>
           </div>
 
-          <div>
-            <label htmlFor="maxRent" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Max Rent ($)
-            </label>
+          <div className="flex items-center">
             <input
-              type="number"
-              id="maxRent"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={maxRent}
-              onChange={(e) => setMaxRent(Number(e.target.value))}
-              min="0"
-              step="50"
-              aria-describedby="maxrent-helper"
-              placeholder="1200"
+              type="checkbox"
+              id="needsAccessibility"
+              className="h-4 w-4 text-indigo-600 border-white/20 rounded focus:ring-indigo-500"
+              checked={needsAccessibility}
+              onChange={(e) => setNeedsAccessibility(e.target.checked)}
             />
-            <p id="maxrent-helper" className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Maximum rent you can afford
-            </p>
+            <label htmlFor="needsAccessibility" className="ml-2 text-sm text-white">
+              Accessibility features
+            </label>
           </div>
-        </div>
-
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="needsAccessibility"
-            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            checked={needsAccessibility}
-            onChange={(e) => setNeedsAccessibility(e.target.checked)}
-          />
-          <label htmlFor="needsAccessibility" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-            Needs accessibility features (step-free entry, accessible bathroom, etc.)
-          </label>
-        </div>
-
-        <div>
-          <label htmlFor="language" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Preferred Language
-          </label>
-          <select
-            id="language"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-          >
-            <option value="en">English</option>
-            <option value="ne">Nepali</option>
-            <option value="lg">Luganda</option>
-          </select>
         </div>
 
         <button
           type="submit"
-          className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-lg hover:from-indigo-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           disabled={!isFormValid || isLoading}
         >
           {isLoading ? (
@@ -172,7 +145,7 @@ export const QuickStart: React.FC = () => {
           ) : (
             <>
               <Search className="w-5 h-5 mr-2" />
-              Find My Top Picks
+              Find Top Picks
             </>
           )}
         </button>
