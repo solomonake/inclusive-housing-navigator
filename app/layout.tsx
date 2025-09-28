@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { NavBar } from '@/components/navigation/NavBar'
 import { Footer } from '@/components/navigation/Footer'
+import { CompareBar } from '@/components/ui/CompareBar'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -42,8 +43,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body data-theme="light" className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
-        <div className="bg-radial bg-grid min-h-screen">
+      <body className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
+        <div className="bg-radial bg-grid min-h-screen flex flex-col">
           <a 
             href="#main" 
             className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-[var(--primary)] text-white px-4 py-2 rounded-lg text-sm font-medium focus-ring"
@@ -52,9 +53,10 @@ export default function RootLayout({
           </a>
           
           <NavBar />
-          <main id="main" className="container-page">
+          <main id="main" className="flex-1">
             {children}
           </main>
+          <CompareBar />
           <Footer />
         </div>
       </body>

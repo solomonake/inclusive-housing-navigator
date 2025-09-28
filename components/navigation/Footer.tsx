@@ -3,17 +3,17 @@ import { Building2 } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-t border-[var(--border)] bg-[var(--surface)]/50 glass">
+    <footer className="border-t border-[var(--border)] glass mt-auto">
       <div className="container-page py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Logo and description */}
           <div className="flex items-center gap-3">
-            <Building2 className="h-5 w-5 text-[var(--primary)]" aria-hidden="true" />
+            <Building2 className="h-5 w-5 text-indigo-400" aria-hidden="true" />
             <div>
-              <p className="text-sm font-medium text-[var(--fg)]">
+              <p className="text-sm font-medium text-white">
                 Inclusive Housing Navigator
               </p>
-              <p className="text-xs text-[var(--fg-muted)]">
+              <p className="text-xs text-white/60">
                 Built at VTHacks 2025 • Inclusive by design
               </p>
             </div>
@@ -23,19 +23,19 @@ export function Footer() {
           <div className="flex items-center gap-6 text-sm">
             <Link 
               href="/about" 
-              className="text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors focus-ring rounded px-1 py-1"
+              className="text-white/60 hover:text-white transition-colors focus-ring rounded px-1 py-1"
             >
               About
             </Link>
-            <span className="text-[var(--fg-muted)]">•</span>
+            <span className="text-white/40">•</span>
             <Link 
               href="/accessibility" 
-              className="text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors focus-ring rounded px-1 py-1"
+              className="text-white/60 hover:text-white transition-colors focus-ring rounded px-1 py-1"
             >
               Accessibility
             </Link>
-            <span className="text-[var(--fg-muted)]">•</span>
-            <span className="text-[var(--fg-muted)]">
+            <span className="text-white/40">•</span>
+            <span className="text-white/60">
               Bias & Limitations
             </span>
           </div>
@@ -43,7 +43,7 @@ export function Footer() {
 
         {/* Disclaimer */}
         <div className="mt-6 pt-6 border-t border-[var(--border)]">
-          <p className="text-xs text-[var(--fg-muted)] text-center max-w-4xl mx-auto">
+          <p className="text-xs text-white/50 text-center max-w-4xl mx-auto">
             <strong>Bias & Limitations:</strong> This tool provides estimates based on available data. 
             Always verify information with landlords and consider your individual needs. 
             D&I scores are algorithmic approximations and should not replace personal judgment.

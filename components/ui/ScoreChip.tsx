@@ -8,6 +8,9 @@ type ScoreType = 'affordability' | 'accessibility' | 'safety' | 'commute' | 'inc
 interface ScoreChipProps {
   type: ScoreType;
   score: number;
+  label?: string;
+  value?: number;
+  variant?: string;
   className?: string;
   showLabel?: boolean;
   size?: 'sm' | 'md' | 'lg';
@@ -16,6 +19,9 @@ interface ScoreChipProps {
 export const ScoreChip: React.FC<ScoreChipProps> = ({
   type,
   score,
+  label,
+  value,
+  variant,
   className,
   showLabel = true,
   size = 'md'
@@ -25,42 +31,42 @@ export const ScoreChip: React.FC<ScoreChipProps> = ({
       affordability: {
         label: 'Affordability',
         icon: '💰',
-        colorClass: 'score-chip-affordability',
-        bgColor: 'bg-indigo-100',
-        textColor: 'text-indigo-800',
-        borderColor: 'border-indigo-200'
+        colorClass: 'chip-affordability',
+        bgColor: 'bg-emerald-500/10',
+        textColor: 'text-emerald-300',
+        borderColor: 'border-emerald-500/20'
       },
       accessibility: {
         label: 'Accessibility',
         icon: '♿',
-        colorClass: 'score-chip-accessibility',
-        bgColor: 'bg-emerald-100',
-        textColor: 'text-emerald-800',
-        borderColor: 'border-emerald-200'
+        colorClass: 'chip-accessibility',
+        bgColor: 'bg-blue-500/10',
+        textColor: 'text-blue-300',
+        borderColor: 'border-blue-500/20'
       },
       safety: {
         label: 'Safety',
         icon: '🛡️',
-        colorClass: 'score-chip-safety',
-        bgColor: 'bg-amber-100',
-        textColor: 'text-amber-800',
-        borderColor: 'border-amber-200'
+        colorClass: 'chip-safety',
+        bgColor: 'bg-amber-500/10',
+        textColor: 'text-amber-300',
+        borderColor: 'border-amber-500/20'
       },
       commute: {
         label: 'Commute',
         icon: '🚌',
-        colorClass: 'score-chip-commute',
-        bgColor: 'bg-sky-100',
-        textColor: 'text-sky-800',
-        borderColor: 'border-sky-200'
+        colorClass: 'chip-commute',
+        bgColor: 'bg-sky-500/10',
+        textColor: 'text-sky-300',
+        borderColor: 'border-sky-500/20'
       },
       inclusivity: {
         label: 'Inclusivity',
         icon: '🤝',
-        colorClass: 'score-chip-inclusivity',
-        bgColor: 'bg-purple-100',
-        textColor: 'text-purple-800',
-        borderColor: 'border-purple-200'
+        colorClass: 'chip-inclusivity',
+        bgColor: 'bg-purple-500/10',
+        textColor: 'text-purple-300',
+        borderColor: 'border-purple-500/20'
       }
     };
     return configs[type];
@@ -77,31 +83,34 @@ export const ScoreChip: React.FC<ScoreChipProps> = ({
 
   const config = getTypeConfig(type);
   const sizeClasses = getSizeClasses(size);
+  const displayScore = value !== undefined ? value : score;
+  const displayLabel = label || config.label;
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-700';
-    if (score >= 60) return 'text-yellow-700';
-    if (score >= 40) return 'text-orange-700';
-    return 'text-red-700';
+    if (score >= 80) return 'text-emerald-200';
+    if (score >= 60) return 'text-amber-200';
+    if (score >= 40) return 'text-orange-200';
+    return 'text-red-200';
   };
 
   return (
     <div
       className={cn(
-        'inline-flex items-center rounded-full border font-medium transition-all duration-200 hover:scale-105 motion-safe:transition-all',
+        'inline-flex items-center rounded-full border font-medium transition-all duration-200 hover:scale-105',
         config.bgColor,
         config.textColor,
         config.borderColor,
         sizeClasses,
         className
       )}
+      aria-label={`${displayLabel}: ${displayScore} out of 100`}
     >
       <span className="mr-1.5 text-xs">{config.icon}</span>
       {showLabel && (
-        <span className="mr-1.5 font-medium">{config.label}:</span>
+        <span className="mr-1.5 font-medium">{displayLabel}:</span>
       )}
-      <span className={cn('font-bold', getScoreColor(score))}>
-        {Math.round(score)}
+      <span className={cn('font-bold', getScoreColor(displayScore))}>
+        {Math.round(displayScore)}
       </span>
     </div>
   );

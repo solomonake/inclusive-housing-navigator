@@ -5,13 +5,15 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Listing } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, DollarSign, MapPin, Accessibility, BarChart3, PieChart as PieChartIcon, Target as ScatterChartIcon } from 'lucide-react';
+import { TrendingUp, DollarSign, MapPin, Accessibility, BarChart3, PieChart as PieChartIcon, Target as ScatterChartIcon, RefreshCw } from 'lucide-react';
 import { ensureArray, nonEmpty } from '@/lib/utils/safe';
+import { AriaLive } from '@/components/accessibility/aria-live';
 
 export default function ChartsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [ariaMessage, setAriaMessage] = useState('');
 
   useEffect(() => {
     loadListings();
@@ -20,6 +22,7 @@ export default function ChartsPage() {
   const loadListings = async () => {
     setLoading(true);
     setError('');
+    setAriaMessage('Loading housing data...');
     try {
       const response = await fetch('/api/listings');
       const payload = await response.json().catch(() => ({}));
@@ -27,12 +30,15 @@ export default function ChartsPage() {
       
       if (nonEmpty(listings)) {
         setListings(listings);
+        setAriaMessage(`Loaded ${listings.length} listings for analysis`);
       } else {
         setError('No listings data available');
+        setAriaMessage('No listings data available');
       }
     } catch (error) {
       console.error('Error loading listings:', error);
       setError('Failed to load listings data');
+      setAriaMessage('Failed to load listings data');
     } finally {
       setLoading(false);
     }
@@ -110,8 +116,8 @@ export default function ChartsPage() {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-          <p className="font-medium text-gray-900 dark:text-white">{label}</p>
+        <div className="glass p-3 border border-white/20 rounded-xl shadow-lg backdrop-blur-md">
+          <p className="font-medium text-white">{label}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
               {entry.name}: {entry.value}
@@ -127,8 +133,8 @@ export default function ChartsPage() {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-          <p className="font-medium text-gray-900 dark:text-white">{data.name}</p>
+        <div className="glass p-3 border border-white/20 rounded-xl shadow-lg backdrop-blur-md">
+          <p className="font-medium text-white">{data.name}</p>
           <p className="text-sm text-blue-600">Distance: {data.x} km</p>
           <p className="text-sm text-green-600">Rent: ${data.y}</p>
           <p className="text-sm text-purple-600">D&I Score: {data.di_score}</p>
@@ -140,8 +146,9 @@ export default function ChartsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen py-8">
+      <div className="min-h-screen py-8 bg-radial bg-grid">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AriaLive message="Loading housing data..." />
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-400 mx-auto"></div>
             <p className="mt-4 text-white/70">Loading housing data...</p>
@@ -153,8 +160,9 @@ export default function ChartsPage() {
 
   if (error || !nonEmpty(listings)) {
     return (
-      <div className="min-h-screen py-8">
+      <div className="min-h-screen py-8 bg-radial bg-grid">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AriaLive message={error || 'No data available'} assertive />
           <Card className="p-8 text-center">
             <div className="w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <BarChart3 className="w-10 h-10 text-white" />
@@ -164,9 +172,9 @@ export default function ChartsPage() {
               {error || 'No housing data available for visualization.'}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button onClick={loadListings} variant="gradient">
+              <Button onClick={loadListings} variant="gradient" disabled={loading}>
                 <TrendingUp className="w-4 h-4 mr-2" />
-                Retry Loading Data
+                {loading ? 'Loading...' : 'Retry Loading Data'}
               </Button>
               <Button onClick={() => window.location.href = '/listings'} variant="glass">
                 <MapPin className="w-4 h-4 mr-2" />
@@ -180,8 +188,10 @@ export default function ChartsPage() {
   }
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-8 bg-radial bg-grid">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <AriaLive message={ariaMessage} />
+        
         {/* Header */}
         <div className="mb-12">
           <div className="flex items-center gap-4 mb-6">
@@ -201,7 +211,7 @@ export default function ChartsPage() {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card className="p-6">
+          <Card className="p-6">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center">
                   <MapPin className="w-6 h-6 text-white" />
@@ -211,7 +221,7 @@ export default function ChartsPage() {
                   <p className="text-white/70 text-sm">Total Properties</p>
                 </div>
               </div>
-            </Card>
+          </Card>
 
           <Card className="p-6">
             <div className="flex items-center space-x-4">
@@ -267,30 +277,40 @@ export default function ChartsPage() {
                   <BarChart3 className="w-5 h-5 mr-2 text-blue-400" />
                   Rent Price Distribution
                 </CardTitle>
+                <p className="text-white/60 text-sm">Distribution of rental prices across all listings</p>
               </CardHeader>
               <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={getPriceDistributionData()}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis 
-                        dataKey="name" 
-                        stroke="#9CA3AF"
-                        fontSize={12}
-                      />
-                      <YAxis 
-                        stroke="#9CA3AF"
-                        fontSize={12}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                        {getPriceDistributionData().map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+                {getPriceDistributionData().length > 0 ? (
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={getPriceDistributionData()}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                        <XAxis 
+                          dataKey="name" 
+                          stroke="#9CA3AF"
+                          fontSize={12}
+                        />
+                        <YAxis 
+                          stroke="#9CA3AF"
+                          fontSize={12}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                          {getPriceDistributionData().map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-80 flex items-center justify-center">
+                    <div className="text-center">
+                      <BarChart3 className="w-12 h-12 text-white/40 mx-auto mb-4" />
+                      <p className="text-white/60">No price data available</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -301,28 +321,38 @@ export default function ChartsPage() {
                   <PieChartIcon className="w-5 h-5 mr-2 text-green-400" />
                   Diversity & Inclusion Scores
                 </CardTitle>
+                <p className="text-white/60 text-sm">Distribution of D&I scores across all properties</p>
               </CardHeader>
               <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={getDiversityScoreData()}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                      >
-                        {getDiversityScoreData().map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
+                {getDiversityScoreData().length > 0 ? (
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={getDiversityScoreData()}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={100}
+                          dataKey="value"
+                          label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                        >
+                          {getDiversityScoreData().map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-80 flex items-center justify-center">
+                    <div className="text-center">
+                      <PieChartIcon className="w-12 h-12 text-white/40 mx-auto mb-4" />
+                      <p className="text-white/60">No score data available</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -334,31 +364,41 @@ export default function ChartsPage() {
                 <ScatterChartIcon className="w-5 h-5 mr-2 text-purple-400" />
                 Price vs Distance Analysis
               </CardTitle>
+              <p className="text-white/60 text-sm">Relationship between rental price and distance to campus</p>
             </CardHeader>
             <CardContent>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ScatterChart>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis 
-                      type="number" 
-                      dataKey="x" 
-                      name="Distance (km)"
-                      stroke="#9CA3AF"
-                      fontSize={12}
-                    />
-                    <YAxis 
-                      type="number" 
-                      dataKey="y" 
-                      name="Rent ($)"
-                      stroke="#9CA3AF"
-                      fontSize={12}
-                    />
-                    <Tooltip content={<ScatterTooltip />} />
-                    <Scatter dataKey="y" fill="#8B5CF6" />
-                  </ScatterChart>
-                </ResponsiveContainer>
-              </div>
+              {getPriceDistanceData().length > 0 ? (
+                <div className="h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ScatterChart data={getPriceDistanceData()}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                      <XAxis 
+                        type="number" 
+                        dataKey="x" 
+                        name="Distance (km)"
+                        stroke="#9CA3AF"
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        type="number" 
+                        dataKey="y" 
+                        name="Rent ($)"
+                        stroke="#9CA3AF"
+                        fontSize={12}
+                      />
+                      <Tooltip content={<ScatterTooltip />} />
+                      <Scatter dataKey="y" fill="#8B5CF6" />
+                    </ScatterChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-96 flex items-center justify-center">
+                  <div className="text-center">
+                    <ScatterChartIcon className="w-12 h-12 text-white/40 mx-auto mb-4" />
+                    <p className="text-white/60">No location data available</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -369,30 +409,40 @@ export default function ChartsPage() {
                 <Accessibility className="w-5 h-5 mr-2 text-yellow-400" />
                 Accessibility Features Availability
               </CardTitle>
+              <p className="text-white/60 text-sm">Number of properties with each accessibility feature</p>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={getAccessibilityData()}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis 
-                      dataKey="name" 
-                      stroke="#9CA3AF"
-                      fontSize={12}
-                    />
-                    <YAxis 
-                      stroke="#9CA3AF"
-                      fontSize={12}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                      {getAccessibilityData().map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {getAccessibilityData().length > 0 ? (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={getAccessibilityData()}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                      <XAxis 
+                        dataKey="name" 
+                        stroke="#9CA3AF"
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        stroke="#9CA3AF"
+                        fontSize={12}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                        {getAccessibilityData().map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-80 flex items-center justify-center">
+                  <div className="text-center">
+                    <Accessibility className="w-12 h-12 text-white/40 mx-auto mb-4" />
+                    <p className="text-white/60">No accessibility data available</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -404,24 +454,26 @@ export default function ChartsPage() {
               <TrendingUp className="w-5 h-5 mr-2 text-emerald-400" />
               Key Insights
             </CardTitle>
+            <p className="text-white/60 text-sm">Data-driven insights from the housing market analysis</p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {nonEmpty(listings) ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                 <h4 className="font-semibold text-blue-300 mb-2">💰 Price Insights</h4>
                 <ul className="text-sm text-blue-200 space-y-1">
                   <li>• Average rent: ${Math.round(listings.reduce((sum, l) => sum + l.rent, 0) / listings.length)}</li>
                   <li>• Price range: ${Math.min(...listings.map(l => l.rent))} - ${Math.max(...listings.map(l => l.rent))}</li>
-                  <li>• Most common price range: ${getPriceDistributionData().reduce((max, item) => item.value > max.value ? item : max).name}</li>
+                  <li>• Most common price range: {getPriceDistributionData().length > 0 ? getPriceDistributionData().reduce((max, item) => item.value > max.value ? item : max).name : 'N/A'}</li>
                 </ul>
               </div>
 
               <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
                 <h4 className="font-semibold text-green-300 mb-2">♿ Accessibility</h4>
                 <ul className="text-sm text-green-200 space-y-1">
-                  <li>• Properties with wheelchair access: {listings.filter(l => l.wheelchair_access).length}</li>
+                  <li>• Properties with step-free access: {listings.filter(l => l.step_free).length}</li>
                   <li>• Properties with elevators: {listings.filter(l => l.elevator).length}</li>
-                  <li>• Ground floor options: {listings.filter(l => l.ground_floor).length}</li>
+                  <li>• Accessible bathrooms: {listings.filter(l => l.acc_bath).length}</li>
                 </ul>
               </div>
 
@@ -430,10 +482,16 @@ export default function ChartsPage() {
                 <ul className="text-sm text-purple-200 space-y-1">
                   <li>• Average distance to campus: {Math.round(listings.reduce((sum, l) => sum + l.dist_to_campus_km, 0) / listings.length * 10) / 10} km</li>
                   <li>• Walkable properties (≤15 min): {listings.filter(l => (l.walk_min || 0) <= 15).length}</li>
-                  <li>• Transit accessible: {listings.filter(l => l.transit_min && l.transit_min <= 30).length}</li>
+                  <li>• International friendly: {listings.filter(l => l.accepts_international).length}</li>
                 </ul>
               </div>
-            </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <TrendingUp className="w-12 h-12 text-white/40 mx-auto mb-4" />
+                <p className="text-white/60">No data available for insights</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ListingCard } from '@/components/ui/ListingCard'
+import { AriaLive } from '@/components/accessibility/aria-live'
 import { 
   Search, 
   Filter, 
@@ -12,7 +13,8 @@ import {
   SlidersHorizontal,
   X,
   RefreshCw,
-  Map
+  Map,
+  Building2
 } from 'lucide-react'
 import { Listing } from '@/types'
 import { cn } from '@/lib/cn'
@@ -51,7 +53,7 @@ const FilterRail: React.FC<{
   }
 
   return (
-    <Card className="sticky top-6">
+    <Card className="sticky top-20 h-fit">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <SlidersHorizontal className="w-5 h-5" aria-hidden="true" />
@@ -64,7 +66,7 @@ const FilterRail: React.FC<{
       <CardContent className="space-y-6">
         {/* Price Range */}
         <div className="space-y-3">
-          <label className="text-sm font-medium text-[var(--fg)]">
+          <label className="text-sm font-medium text-white">
             Monthly Rent: ${priceRange[0]} - ${priceRange[1]}
           </label>
           <div className="flex gap-2">
@@ -89,20 +91,20 @@ const FilterRail: React.FC<{
               aria-label="Maximum price"
             />
           </div>
-          <p className="text-xs text-[var(--fg-muted)]">
+          <p className="text-xs text-white/60">
             Adjust the range to filter by monthly rent
           </p>
         </div>
 
         {/* Bedrooms */}
         <div className="space-y-3">
-          <label className="text-sm font-medium text-[var(--fg)]">
+          <label className="text-sm font-medium text-white">
             Bedrooms
           </label>
           <select
             value={bedrooms}
             onChange={(e) => setBedrooms(e.target.value)}
-            className="w-full p-2 border border-[var(--border)] rounded-lg bg-[var(--card)] text-[var(--fg)] focus-ring"
+            className="w-full p-3 border border-white/20 rounded-xl bg-white/10 text-white focus-ring backdrop-blur-md"
             aria-label="Number of bedrooms"
           >
             <option value="any">Any</option>
@@ -115,7 +117,7 @@ const FilterRail: React.FC<{
 
         {/* Accessibility Score */}
         <div className="space-y-3">
-          <label className="text-sm font-medium text-[var(--fg)]">
+          <label className="text-sm font-medium text-white">
             Min Accessibility: {accessibilityMin}%
           </label>
           <input
@@ -128,14 +130,14 @@ const FilterRail: React.FC<{
             className="w-full focus-ring"
             aria-label="Minimum accessibility score"
           />
-          <p className="text-xs text-[var(--fg-muted)]">
+          <p className="text-xs text-white/60">
             Higher scores mean better accessibility features
           </p>
         </div>
 
         {/* Inclusivity Score */}
         <div className="space-y-3">
-          <label className="text-sm font-medium text-[var(--fg)]">
+          <label className="text-sm font-medium text-white">
             Min Inclusivity: {inclusivityMin}%
           </label>
           <input
@@ -152,7 +154,7 @@ const FilterRail: React.FC<{
 
         {/* Safety Score */}
         <div className="space-y-3">
-          <label className="text-sm font-medium text-[var(--fg)]">
+          <label className="text-sm font-medium text-white">
             Min Safety: {safetyMin}%
           </label>
           <input
@@ -169,7 +171,7 @@ const FilterRail: React.FC<{
 
         {/* Commute Time */}
         <div className="space-y-3">
-          <label className="text-sm font-medium text-[var(--fg)]">
+          <label className="text-sm font-medium text-white">
             Max Commute: {commuteMax} minutes
           </label>
           <input
@@ -187,7 +189,8 @@ const FilterRail: React.FC<{
         {/* Action Buttons */}
         <div className="flex gap-2 pt-4">
           <Button 
-            className="flex-1" 
+            variant="gradient"
+            className="flex-1"
             onClick={applyFilters}
             disabled={loading}
           >
@@ -195,13 +198,11 @@ const FilterRail: React.FC<{
             Apply
           </Button>
           <Button 
-            variant="outline" 
-            className="flex-1"
+            variant="glass"
             onClick={clearFilters}
             disabled={loading}
           >
-            <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
-            Clear
+            <X className="w-4 h-4" aria-hidden="true" />
           </Button>
         </div>
       </CardContent>
@@ -217,11 +218,13 @@ export default function ListingsPage() {
   const [filtersRelaxed, setFiltersRelaxed] = useState(false)
   const [currentFilters, setCurrentFilters] = useState<any>({})
   const [selectedListing, setSelectedListing] = useState<Listing | undefined>()
+  const [ariaMessage, setAriaMessage] = useState('')
 
   const fetchListings = async (filters: any = {}) => {
     try {
       setLoading(true)
       setError(null)
+      setAriaMessage('Loading listings...')
       
       const queryParams = new URLSearchParams()
       if (filters.maxRent) queryParams.append('max_rent', filters.maxRent.toString())
@@ -233,12 +236,15 @@ export default function ListingsPage() {
       
       if (data.error) {
         setError(data.error)
+        setAriaMessage(`Error: ${data.error}`)
     } else {
         setListings(data.listings || [])
         setFiltersRelaxed(data.meta?.relaxed || false)
+        setAriaMessage(`Found ${data.listings?.length || 0} listings`)
       }
     } catch (err) {
       setError('Failed to fetch listings')
+      setAriaMessage('Failed to fetch listings')
       console.error('Error fetching listings:', err)
     } finally {
       setLoading(false)
@@ -261,17 +267,18 @@ export default function ListingsPage() {
 
   if (loading) {
     return (
-      <div className="section">
+      <div className="section bg-radial bg-grid">
         <div className="container-page">
-          <div className="grid grid-cols-1 lg:grid-cols-[320px,1fr] gap-6">
+          <AriaLive message="Loading listings..." />
+          <div className="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-8">
             <div className="space-y-4">
-              <div className="skeleton h-64 rounded-2xl"></div>
+              <div className="skeleton h-96 rounded-2xl"></div>
             </div>
             <div className="space-y-4">
-              <div className="skeleton h-16 rounded-2xl"></div>
+              <div className="skeleton h-20 rounded-2xl"></div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="skeleton h-96 rounded-2xl"></div>
+                  <div key={i} className="skeleton h-80 rounded-2xl"></div>
                 ))}
               </div>
             </div>
@@ -283,14 +290,17 @@ export default function ListingsPage() {
 
   if (error) {
     return (
-      <div className="section">
+      <div className="section bg-radial bg-grid">
         <div className="container-page">
+          <AriaLive message={`Error: ${error}`} assertive />
           <Card className="text-center py-12">
             <CardContent>
-              <div className="text-red-500 text-6xl mb-4">⚠️</div>
-              <h2 className="text-2xl font-bold text-[var(--fg)] mb-2">Error Loading Listings</h2>
-              <p className="text-[var(--fg-muted)] mb-6">{error}</p>
-              <Button onClick={() => window.location.reload()}>
+              <div className="w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Building2 className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Error Loading Listings</h2>
+              <p className="text-white/70 mb-6">{error}</p>
+              <Button variant="gradient" onClick={() => window.location.reload()}>
                 <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
                 Try Again
               </Button>
@@ -302,11 +312,30 @@ export default function ListingsPage() {
   }
 
   return (
-    <div className="section">
+    <div className="section bg-radial bg-grid">
       <div className="container-page">
-        <div className="grid grid-cols-1 lg:grid-cols-[320px,1fr] gap-6">
+        <AriaLive message={ariaMessage} />
+        
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-xl flex items-center justify-center">
+              <Building2 className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white text-shadow mb-2">
+                Housing Listings
+              </h1>
+              <p className="text-white/70 text-base sm:text-lg leading-relaxed">
+                Discover inclusive, accessible housing with AI-powered D&I scoring
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-8">
           {/* Filter Rail */}
-          <div className="lg:sticky lg:top-6 lg:h-fit">
+          <div>
             <FilterRail onFiltersChange={handleFiltersChange} loading={loading} />
           </div>
 
@@ -315,18 +344,18 @@ export default function ListingsPage() {
             {/* Results Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-[var(--fg)]">
+                <h2 className="text-2xl font-bold text-white">
                   {listings.length} {listings.length === 1 ? 'Property' : 'Properties'} Found
-                </h1>
+                </h2>
                 {filtersRelaxed && (
-                  <Badge variant="secondary" className="mt-2">
+                  <Badge className="mt-2 bg-amber-500/20 text-amber-300 border-amber-500/30">
                     Filters relaxed to show more results
                   </Badge>
                 )}
               </div>
               <div className="flex gap-2">
                 <Button
-                  variant={showMap ? "primary" : "outline"}
+                  variant={showMap ? "gradient" : "glass"}
                   onClick={() => setShowMap(!showMap)}
                   className="flex items-center gap-2"
                 >
@@ -362,12 +391,14 @@ export default function ListingsPage() {
             {listings.length === 0 ? (
               <Card className="text-center py-12">
                 <CardContent>
-                  <div className="text-6xl mb-4">🏠</div>
-                  <h2 className="text-2xl font-bold text-[var(--fg)] mb-2">No Properties Found</h2>
-                  <p className="text-[var(--fg-muted)] mb-6">
+                  <div className="w-20 h-20 bg-gradient-to-br from-gray-400 to-gray-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Building2 className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">No Properties Found</h3>
+                  <p className="text-white/70 mb-6">
                     Try adjusting your filters to see more results
                   </p>
-                  <Button variant="outline">
+                  <Button variant="glass" onClick={clearFilters}>
                     <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
                     Reset Filters
                   </Button>

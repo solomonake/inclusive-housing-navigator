@@ -3,121 +3,23 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ScoreDonut } from '@/components/ui/ScoreDonut'
+import { ScoreChip } from '@/components/ui/ScoreChip'
+import { HeartButton } from '@/components/ui/HeartButton'
+import { CompareCheckbox } from '@/components/ui/CompareCheckbox'
 import { 
   MapPin, 
   DollarSign, 
   Bed, 
   Bath, 
-  Heart, 
-  Share2, 
   FileText,
   Eye,
-  Plus
+  Accessibility,
+  Shield,
+  Clock
 } from 'lucide-react'
 import { Listing } from '@/types'
 import { cn } from '@/lib/cn'
-
-interface ScoreChipProps {
-  label: string
-  score: number
-  icon: React.ReactNode
-  variant: 'affordability' | 'accessibility' | 'safety' | 'commute' | 'inclusivity'
-}
-
-const ScoreChip: React.FC<ScoreChipProps> = ({ label, score, icon, variant }) => {
-  const variants = {
-    affordability: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    accessibility: 'bg-blue-100 text-blue-800 border-blue-200',
-    safety: 'bg-amber-100 text-amber-800 border-amber-200',
-    commute: 'bg-purple-100 text-purple-800 border-purple-200',
-    inclusivity: 'bg-teal-100 text-teal-800 border-teal-200',
-  }
-
-  return (
-    <div className={cn(
-      'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border',
-      variants[variant]
-    )}>
-      <span className="flex-shrink-0" aria-hidden="true">
-        {icon}
-      </span>
-      <span className="font-semibold">{score}</span>
-      <span className="hidden sm:inline">{label}</span>
-    </div>
-  )
-}
-
-interface ScoreDonutProps {
-  score: number
-  size?: 'sm' | 'md' | 'lg'
-}
-
-const ScoreDonut: React.FC<ScoreDonutProps> = ({ score, size = 'md' }) => {
-  const sizes = {
-    sm: 'w-12 h-12',
-    md: 'w-16 h-16',
-    lg: 'w-20 h-20'
-  }
-
-  const strokeWidth = size === 'sm' ? 3 : size === 'md' ? 4 : 5
-  const radius = size === 'sm' ? 18 : size === 'md' ? 24 : 30
-  const circumference = 2 * Math.PI * radius
-  const strokeDasharray = circumference
-  const strokeDashoffset = circumference - (score / 100) * circumference
-
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return '#10b981' // emerald-500
-    if (score >= 60) return '#f59e0b' // amber-500
-    return '#ef4444' // red-500
-  }
-
-  return (
-    <div className={cn('relative', sizes[size])}>
-      <svg
-        className="w-full h-full transform -rotate-90"
-        viewBox={`0 0 ${(radius + strokeWidth) * 2} ${(radius + strokeWidth) * 2}`}
-        aria-label={`D&I score ${score} out of 100`}
-      >
-        {/* Background circle */}
-        <circle
-          cx={radius + strokeWidth}
-          cy={radius + strokeWidth}
-          r={radius}
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-          fill="none"
-          className="text-gray-200"
-        />
-        {/* Progress circle */}
-        <circle
-          cx={radius + strokeWidth}
-          cy={radius + strokeWidth}
-          r={radius}
-          stroke={getScoreColor(score)}
-          strokeWidth={strokeWidth}
-          fill="none"
-          strokeDasharray={strokeDasharray}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-          className="transition-all duration-1000 ease-out"
-          style={{
-            strokeDasharray,
-            strokeDashoffset
-          }}
-        />
-      </svg>
-      {/* Score text */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className={cn(
-          'font-bold text-[var(--fg)]',
-          size === 'sm' ? 'text-xs' : size === 'md' ? 'text-sm' : 'text-base'
-        )}>
-          {score}
-        </span>
-      </div>
-    </div>
-  )
-}
 
 interface ListingCardProps {
   listing: Listing
@@ -141,149 +43,138 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   const {
     id,
     title,
-    addr: address,
-    rent: price,
-    bedrooms,
-    bathrooms,
-    di_score: dAndIScore,
+    addr,
+    rent,
+    avg_utils,
+    di_score,
     subscores
   } = listing
 
-  const affordabilityScore = subscores?.affordability || 0
-  const accessibilityScore = subscores?.accessibility || 0
-  const safetyScore = subscores?.safety || 0
-  const commuteScore = subscores?.commute || 0
-  const inclusivityScore = subscores?.inclusivity || 0
-
-  const formatPrice = (price: number) => {
+  const formatPrice = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(price)
+    }).format(amount)
   }
 
+  const totalMonthlyCost = rent + (avg_utils || 0);
+
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-      <CardHeader className="pb-4">
+    <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 overflow-hidden">
+      <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <CardTitle className="text-lg font-semibold text-[var(--fg)] line-clamp-2 mb-2">
+            <CardTitle className="text-lg font-semibold text-white line-clamp-2 mb-2">
               {title}
             </CardTitle>
-            <div className="flex items-center gap-2 text-[var(--fg-muted)] text-sm">
+            <div className="flex items-center gap-2 text-white/60 text-sm">
               <MapPin className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-              <span className="truncate">{address}</span>
+              <span className="truncate">{addr}</span>
             </div>
           </div>
           <div className="flex-shrink-0">
-            <ScoreDonut score={dAndIScore} size="md" />
+            <ScoreDonut score={di_score} size="md" />
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pb-4">
         {/* Price and basic info */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-[var(--success)]" aria-hidden="true" />
-            <span className="text-2xl font-bold text-[var(--fg)]">
-              {formatPrice(price)}
-            </span>
-            <span className="text-[var(--fg-muted)] text-sm">/month</span>
+            <DollarSign className="w-5 h-5 text-emerald-400" aria-hidden="true" />
+            <div className="flex flex-col">
+              <span className="text-xl font-bold text-white">
+                {formatPrice(rent)}
+              </span>
+              {avg_utils && (
+                <span className="text-xs text-white/60">
+                  +{formatPrice(avg_utils)} utils
+                </span>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-4 text-[var(--fg-muted)] text-sm">
-            <div className="flex items-center gap-1">
-              <Bed className="w-4 h-4" aria-hidden="true" />
-              <span>{bedrooms}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Bath className="w-4 h-4" aria-hidden="true" />
-              <span>{bathrooms}</span>
-            </div>
+          <div className="text-right">
+            <span className="text-sm text-white/60">/month</span>
+          </div>
+        </div>
+
+        {/* Accessibility indicators */}
+        <div className="flex flex-wrap gap-2">
+          {listing.step_free && (
+            <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-300 border-emerald-500/20">
+              <Accessibility className="w-3 h-3 mr-1" />
+              Step-free
+            </Badge>
+          )}
+          {listing.elevator && (
+            <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-300 border-blue-500/20">
+              Elevator
+            </Badge>
+          )}
+          {listing.acc_bath && (
+            <Badge variant="outline" className="text-xs bg-purple-500/10 text-purple-300 border-purple-500/20">
+              Accessible Bath
+            </Badge>
+          )}
+          {listing.accepts_international && (
+            <Badge variant="outline" className="text-xs bg-sky-500/10 text-sky-300 border-sky-500/20">
+              International OK
+            </Badge>
+          )}
+        </div>
+
+        {/* Distance and commute */}
+        <div className="flex items-center justify-between text-sm text-white/70">
+          <div className="flex items-center gap-1">
+            <MapPin className="w-4 h-4" />
+            <span>{listing.dist_to_campus_km || 1.0}km to campus</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Clock className="w-4 h-4" />
+            <span>{listing.walk_min || 15}min walk</span>
           </div>
         </div>
 
         {/* Score chips */}
-        <div className="flex flex-wrap gap-2">
-          <ScoreChip
-            label="Affordability"
-            score={affordabilityScore}
-            icon={<DollarSign className="w-3 h-3" />}
-            variant="affordability"
-          />
-          <ScoreChip
-            label="Accessibility"
-            score={accessibilityScore}
-            icon={<Eye className="w-3 h-3" />}
-            variant="accessibility"
-          />
-          <ScoreChip
-            label="Safety"
-            score={safetyScore}
-            icon={<Heart className="w-3 h-3" />}
-            variant="safety"
-          />
-          <ScoreChip
-            label="Commute"
-            score={commuteScore}
-            icon={<MapPin className="w-3 h-3" />}
-            variant="commute"
-          />
-          <ScoreChip
-            label="Inclusivity"
-            score={inclusivityScore}
-            icon={<Plus className="w-3 h-3" />}
-            variant="inclusivity"
-          />
-        </div>
+        {subscores && (
+          <div className="flex flex-wrap gap-2">
+            <ScoreChip
+              type="affordability"
+              score={subscores.affordability}
+              size="sm"
+            />
+            <ScoreChip
+              type="accessibility"
+              score={subscores.accessibility}
+              size="sm"
+            />
+            <ScoreChip
+              type="safety"
+              score={subscores.safety}
+              size="sm"
+            />
+          </div>
+        )}
 
       </CardContent>
 
-      <CardFooter className="pt-4">
-        <div className="flex flex-wrap gap-2 w-full">
+      <CardFooter className="pt-0 pb-6">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex gap-2">
+            <HeartButton listingId={id} />
+            <CompareCheckbox listingId={id} />
+          </div>
           <Button
-            variant="outline"
+            variant="gradient"
             size="sm"
             onClick={() => onDetails?.(listing)}
-            className="flex-1 min-w-0"
+            className="flex items-center gap-2"
           >
             <Eye className="w-4 h-4 mr-2" aria-hidden="true" />
             Details
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onSave?.(listing)}
-            className={cn(
-              'flex-1 min-w-0',
-              isSaved && 'bg-[var(--primary)] text-white border-[var(--primary)]'
-            )}
-          >
-            <Heart className={cn('w-4 h-4 mr-2', isSaved && 'fill-current')} aria-hidden="true" />
-            {isSaved ? 'Saved' : 'Save'}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onCompare?.(listing)}
-            className={cn(
-              'flex-1 min-w-0',
-              isComparing && 'bg-[var(--warning)] text-white border-[var(--warning)]'
-            )}
-          >
-            <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
-            {isComparing ? 'Comparing' : 'Compare'}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onLeaseQA?.(listing)}
-            className="flex-1 min-w-0"
-          >
-            <FileText className="w-4 h-4 mr-2" aria-hidden="true" />
-            Lease QA
           </Button>
         </div>
       </CardFooter>

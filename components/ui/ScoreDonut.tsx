@@ -4,20 +4,28 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface ScoreDonutProps {
-  score: number;
+  value?: number;
+  score?: number;
+  label?: string;
   size?: 'sm' | 'md' | 'lg';
+  colorClass?: string;
   className?: string;
   showPercentage?: boolean;
   animated?: boolean;
 }
 
 export const ScoreDonut: React.FC<ScoreDonutProps> = ({
+  value,
   score,
+  label,
   size = 'md',
+  colorClass,
   className,
   showPercentage = true,
   animated = true
 }) => {
+  const displayScore = value !== undefined ? value : score || 0;
+
   const sizeClasses = {
     sm: 'w-16 h-16',
     md: 'w-24 h-24',
@@ -34,20 +42,20 @@ export const ScoreDonut: React.FC<ScoreDonutProps> = ({
   const radius = size === 'sm' ? 26 : size === 'md' ? 38 : 50;
   const circumference = 2 * Math.PI * radius;
   const strokeDasharray = circumference;
-  const strokeDashoffset = circumference - (score / 100) * circumference;
+  const strokeDashoffset = circumference - (displayScore / 100) * circumference;
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'stroke-emerald-500';
-    if (score >= 60) return 'stroke-amber-500';
-    if (score >= 40) return 'stroke-orange-500';
+    if (score >= 80) return 'stroke-emerald-400';
+    if (score >= 60) return 'stroke-amber-400';
+    if (score >= 40) return 'stroke-orange-400';
     return 'stroke-red-500';
   };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 80) return 'stroke-emerald-500/20';
-    if (score >= 60) return 'stroke-amber-500/20';
-    if (score >= 40) return 'stroke-orange-500/20';
-    return 'stroke-red-500/20';
+    if (score >= 80) return 'stroke-emerald-400/20';
+    if (score >= 60) return 'stroke-amber-400/20';
+    if (score >= 40) return 'stroke-orange-400/20';
+    return 'stroke-red-400/20';
   };
 
   return (
@@ -56,6 +64,7 @@ export const ScoreDonut: React.FC<ScoreDonutProps> = ({
         className="transform -rotate-90"
         width={size === 'sm' ? 64 : size === 'md' ? 96 : 128}
         height={size === 'sm' ? 64 : size === 'md' ? 96 : 128}
+        aria-label={`${label || 'Score'}: ${displayScore} out of 100`}
       >
         {/* Background circle */}
         <circle
@@ -65,7 +74,7 @@ export const ScoreDonut: React.FC<ScoreDonutProps> = ({
           stroke="currentColor"
           strokeWidth={strokeWidth}
           fill="none"
-          className={getScoreBgColor(score)}
+          className={getScoreBgColor(displayScore)}
         />
         {/* Progress circle */}
         <circle
@@ -79,12 +88,12 @@ export const ScoreDonut: React.FC<ScoreDonutProps> = ({
           strokeDasharray={strokeDasharray}
           strokeDashoffset={strokeDashoffset}
           className={cn(
-            getScoreColor(score),
+            colorClass || getScoreColor(displayScore),
             animated && 'motion-safe:transition-all motion-safe:duration-1000 motion-safe:ease-out'
           )}
           style={{
             strokeDasharray,
-            strokeDashoffset: animated ? strokeDashoffset : circumference - (score / 100) * circumference
+            strokeDashoffset: animated ? strokeDashoffset : circumference - (displayScore / 100) * circumference
           }}
         />
       </svg>
@@ -93,11 +102,11 @@ export const ScoreDonut: React.FC<ScoreDonutProps> = ({
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center">
           <div className={cn('font-bold text-white', textSizeClasses[size])}>
-            {Math.round(score)}
+            {Math.round(displayScore)}
           </div>
           {showPercentage && (
             <div className={cn('text-white/60', textSizeClasses[size])}>
-              %
+              {size !== 'sm' && '%'}
             </div>
           )}
         </div>

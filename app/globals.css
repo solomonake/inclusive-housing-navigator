@@ -45,6 +45,8 @@
   body {
     @apply text-fg bg-bg;
     font-feature-settings: "liga" on, "calt" on;
+    background: linear-gradient(135deg, rgb(var(--bg)) 0%, rgb(30 41 59) 50%, rgb(var(--bg)) 100%);
+    min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -107,6 +109,8 @@
   }
 
   .glass {
+    background: rgba(var(--glass-bg));
+    border: 1px solid rgba(var(--glass-border));
     backdrop-filter: saturate(150%) blur(10px);
     -webkit-backdrop-filter: saturate(150%) blur(10px);
   }
@@ -192,11 +196,11 @@
 
   /* Button variants */
   .btn-primary {
-    @apply bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90 focus-ring;
+    @apply bg-gradient-to-r from-indigo-500 to-indigo-600 text-white hover:from-indigo-600 hover:to-indigo-700 focus-ring shadow-lg;
   }
 
   .btn-success {
-    @apply bg-[var(--success)] text-white hover:bg-[var(--success)]/90 focus-ring;
+    @apply bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 focus-ring shadow-lg;
   }
 
   .btn-outline {
@@ -207,8 +211,12 @@
     @apply bg-transparent hover:bg-[var(--surface)] focus-ring;
   }
 
-  .btn-subtle {
-    @apply bg-[var(--surface)] hover:bg-[var(--card)] focus-ring;
+  .btn-glass {
+    @apply glass hover:bg-white/10 focus-ring;
+  }
+
+  .btn-gradient {
+    @apply bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 focus-ring shadow-lg;
   }
 
   /* Animation utilities */
@@ -241,6 +249,11 @@
     .animate-slide-up {
       animation: none;
     }
+  }
+
+  /* Text shadow for better readability on gradients */
+  .text-shadow {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 }
 
